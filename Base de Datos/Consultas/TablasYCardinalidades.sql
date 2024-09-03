@@ -9,6 +9,7 @@ where
 	PRODUCTO_RUBRO_DESCRIPCION is not null 
 ;
 
+
 -----------------------------------------------------------------//--------------------------------------------------------------
 print 'Tabla marcas ...'
 select distinct
