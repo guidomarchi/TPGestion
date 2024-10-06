@@ -1,6 +1,6 @@
 Curso: K3671
 
-N° Grupo: No tenemos
+N° Grupo: 22
 
 Grupo: 4_FILAS_AFECTADAS
 
