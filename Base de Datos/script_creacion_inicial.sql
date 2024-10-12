@@ -130,3 +130,145 @@ where VEN_USUARIO_DOMICILIO_LOCALIDAD is not null and VEN_USUARIO_DOMICILIO_PROV
 
 --Hay localidades con dos provincias!! Ver
 
+print 'Tabla Usuario'
+create table [4_FLIAS_AFECTADAS].Usuario(
+	usu_id bigint identity(1,1) primary key,
+	usu_nombre nvarchar(50),
+	usu_contrasenia nvarchar(50),
+	usu_fecha_creacion date,
+);
+
+insert into [4_FLIAS_AFECTADAS].Usuario(usu_nombre,usu_contrasenia,usu_fecha_creacion)
+select distinct
+	m.VEN_USUARIO_NOMBRE,
+	m.VEN_USUARIO_PASS,
+	m.VEN_USUARIO_FECHA_CREACION
+from GD2C2024.gd_esquema.Maestra m
+where 
+	m.VEN_USUARIO_NOMBRE is not null and
+	m.VEN_USUARIO_PASS is not null
+union
+select distinct
+	m.CLI_USUARIO_PASS,
+	m.CLI_USUARIO_NOMBRE,
+	m.CLI_USUARIO_FECHA_CREACION
+from GD2C2024.gd_esquema.Maestra m
+where 
+	m.CLI_USUARIO_PASS is not null and
+	m.CLI_USUARIO_NOMBRE is not null
+;
+
+
+
+print 'Tabla Vendedor'
+create table [4_FLIAS_AFECTADAS].Vendedor(
+	ven_id bigint identity(1,1) primary key,
+	ven_cuit nvarchar(50),
+	ven_mail nvarchar(50),
+	ven_usu_id bigint
+);
+
+insert into [4_FLIAS_AFECTADAS].Vendedor(ven_cuit, ven_mail , ven_usu_id )
+SELECT DISTINCT
+    m.VENDEDOR_RAZON_SOCIAL,
+    m.VENDEDOR_MAIL,
+    m.VENDEDOR_CUIT,
+    u.usu_id
+FROM GD2C2024.gd_esquema.Maestra m
+JOIN [4_FLIAS_AFECTADAS].Usuario u 
+    ON m.VEN_USUARIO_NOMBRE = u.usu_nombre
+    AND m.VEN_USUARIO_PASS = u.usu_contrasenia
+WHERE 
+    m.VENDEDOR_RAZON_SOCIAL IS NOT NULL 
+    AND m.VENDEDOR_MAIL IS NOT NULL 
+    AND m.VENDEDOR_CUIT IS NOT NULL 
+    AND m.VEN_USUARIO_NOMBRE IS NOT NULL 
+    AND m.VEN_USUARIO_PASS IS NOT NULL
+;
+
+
+print 'Tabla Facturas'
+
+create table [4_FLIAS_AFECTADAS].Factura(
+	fac_nro decimal(18,0) primary key,
+	fac_fecha date,
+	fac_total decimal(18,2),
+	fac_vendedor_id bigint
+);
+
+insert into [4_FLIAS_AFECTADAS].Factura(fac_nro,fac_fecha,fac_total,fac_vendedor_id)
+SELECT distinct m.FACTURA_NUMERO, m.FACTURA_FECHA, m.FACTURA_TOTAL, v.ven_id  FROM GD2C2024.gd_esquema.Maestra m
+join(select m.PUBLICACION_CODIGO, m.VENDEDOR_CUIT 
+	 from  GD2C2024.gd_esquema.Maestra m
+	 where m.PUBLICACION_CODIGO is not null and m.VENDEDOR_CUIT is not null)  m2 on m2.PUBLICACION_CODIGO = m.PUBLICACION_CODIGO
+join [4_FLIAS_AFECTADAS].Vendedor v on (m2.VENDEDOR_CUIT = v.ven_cuit)
+where m.FACTURA_NUMERO is not null and m.PUBLICACION_CODIGO is not null
+;
+
+print 'Tabla Clientes'
+
+create table [4_FLIAS_AFECTADAS].Cliente(
+	cli_id bigint identity(1,1) primary key,
+	cli_nombre nvarchar(50),
+	cli_apellido nvarchar(50),
+	cli_dni decimal(18,0),
+	cli_fecha_nac date
+	cli_mail nvarchar(50)
+	cli_usu_id bigint
+);
+
+insert into [4_FLIAS_AFECTADAS].Cliente(cli_nombre, cli_apellido, cli_dni, cli_fecha_nac, cli_mail, cli_usu_id)
+select distinct
+	m.CLIENTE_NOMBRE,
+	m.CLIENTE_APELLIDO,
+	m.CLIENTE_DNI,
+	m.CLIENTE_FECHA_NAC,
+	m.CLIENTE_MAIL,
+	u.usu_id
+from GD2C2024.gd_esquema.Maestra m
+JOIN [4_FLIAS_AFECTADAS].Usuario u 
+    ON m.CLI_USUARIO_NOMBRE = u.usu_nombre
+    AND m.CLI_USUARIO_PASS = u.usu_contrasenia and m.CLI_USUARIO_FECHA_CREACION = u.usu_fecha_creacion
+where 
+	m.CLIENTE_DNI is not null and
+	m.CLI_USUARIO_PASS is not null and
+	m.CLI_USUARIO_NOMBRE is not null
+;
+
+print 'tabla Ventas'
+create table [4_FLIAS_AFECTADAS].Venta(
+	ven_codigo decimal(18,0) primary key,
+	ven_fecha date,
+	ven_total decimal(18,2),
+	ven_cli_id bigint
+);
+
+insert into [4_FLIAS_AFECTADAS].Venta(ven_codigo, ven_fecha, ven_total, ven_cli_id)
+select distinct m.VENTA_CODIGO, m.VENTA_FECHA, m.VENTA_TOTAL, c.cli_id
+from GD2C2024.gd_esquema.Maestra m
+join [4_FLIAS_AFECTADAS].Cliente c on (m.CLIENTE_DNI = c.cli_dni and m.CLIENTE_NOMBRE = c.cli_nombre)
+where m.VENTA_CODIGO is not null
+
+----------------------------------/FKS/--------------------------------------------------------------
+
+-- Agregar FK en Venta que referencia a Cliente
+ALTER TABLE [4_FLIAS_AFECTADAS].Venta
+ADD CONSTRAINT FK_Venta_Cliente
+FOREIGN KEY (ven_cli_id) REFERENCES [4_FLIAS_AFECTADAS].Cliente(cli_id);
+
+-- Agregar FK en Factura que referencia a Vendedor
+ALTER TABLE [4_FLIAS_AFECTADAS].Factura
+ADD CONSTRAINT FK_Factura_Vendedor
+FOREIGN KEY (fac_vendedor_id) REFERENCES [4_FLIAS_AFECTADAS].Vendedor(ven_id);
+
+-- Agregar FK en Cliente que referencia a Usuario
+ALTER TABLE [4_FLIAS_AFECTADAS].Cliente
+ADD CONSTRAINT FK_Cliente_Usuario
+FOREIGN KEY (cli_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
+
+-- Agregar FK en Vendedor que referencia a Usuario
+ALTER TABLE [4_FLIAS_AFECTADAS].Vendedor
+ADD CONSTRAINT FK_Vendedor_Usuario
+FOREIGN KEY (ven_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
+
+
