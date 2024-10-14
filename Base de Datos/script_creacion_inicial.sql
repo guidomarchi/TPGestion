@@ -249,6 +249,87 @@ from GD2C2024.gd_esquema.Maestra m
 join [4_FLIAS_AFECTADAS].Cliente c on (m.CLIENTE_DNI = c.cli_dni and m.CLIENTE_NOMBRE = c.cli_nombre)
 where m.VENTA_CODIGO is not null
 
+
+print 'tabla Domicilio'
+CREATE TABLE [4_FLIAS_AFECTADAS].Domicilio (
+    dom_id INT PRIMARY KEY IDENTITY(1,1),
+    dom_calle NVARCHAR(50),
+    dom_no_calle DECIMAL(18,0),
+    dom_piso DECIMAL(18,0),
+    dom_depto NVARCHAR(50),
+    dom_cp NVARCHAR(50),
+    dom_loc INT
+);
+
+
+INSERT INTO [4_FLIAS_AFECTADAS].Domicilio (
+    dom_calle,
+    dom_no_calle,
+    dom_piso,
+    dom_depto,
+    dom_cp,
+    dom_loc
+)
+
+SELECT 
+    VEN_USUARIO_DOMICILIO_CALLE AS dom_calle,
+    VEN_USUARIO_DOMICILIO_NRO_CALLE AS dom_no_calle,
+    VEN_USUARIO_DOMICILIO_PISO AS dom_piso,
+    VEN_USUARIO_DOMICILIO_DEPTO AS dom_depto,
+    VEN_USUARIO_DOMICILIO_CP AS dom_cp,
+    l.loc_id
+FROM [gd_esquema].[Maestra] m
+JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = m.VEN_USUARIO_DOMICILIO_LOCALIDAD
+JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = m.VEN_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
+WHERE m.VEN_USUARIO_DOMICILIO_CALLE IS NOT NULL AND m.VEN_USUARIO_DOMICILIO_CP IS NOT NULL AND m.VEN_USUARIO_DOMICILIO_NRO_CALLE IS NOT NULL AND l.loc_id IS NOT NULL 
+
+UNION
+
+SELECT 
+    ALMACEN_CALLE AS dom_calle,
+    ALMACEN_NRO_CALLE AS dom_no_calle,
+    null AS dom_piso,
+    null AS dom_depto,
+    null AS dom_cp,
+    l.loc_id
+FROM [gd_esquema].Maestra 
+JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = ALMACEN_Localidad
+JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = ALMACEN_PROVINCIA and l.loc_prov = p.prov_id
+WHERE ALMACEN_CALLE IS NOT NULL AND ALMACEN_NRO_CALLE IS NOT NULL AND l.loc_id IS NOT NULL 
+
+UNION 
+
+SELECT 
+    CLI_USUARIO_DOMICILIO_CALLE AS dom_calle,
+    CLI_USUARIO_DOMICILIO_NRO_CALLE AS dom_no_calle,
+    CLI_USUARIO_DOMICILIO_PISO AS dom_piso,
+    CLI_USUARIO_DOMICILIO_DEPTO AS dom_depto,
+    CLI_USUARIO_DOMICILIO_CP AS dom_cp,
+    l.loc_id
+FROM [gd_esquema].[Maestra] m
+JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = m.CLI_USUARIO_DOMICILIO_LOCALIDAD
+JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = m.CLI_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
+WHERE m.CLI_USUARIO_DOMICILIO_CALLE IS NOT NULL AND 
+	m.CLI_USUARIO_DOMICILIO_CP IS NOT NULL AND 
+	m.CLI_USUARIO_DOMICILIO_NRO_CALLE IS NOT NULL AND 
+	l.loc_id IS NOT NULL 
+;
+
+
+create table [4_FLIAS_AFECTADAS].MedioDePago(
+	mp_id bigint identity(1,1) primary key,
+	mp_tipo nvarchar(50),
+	mp_nombre nvarchar(50)
+)
+
+insert into [4_FLIAS_AFECTADAS].MedioDePago(mp_tipo,mp_nombre)
+select distinct
+	m.PAGO_TIPO_MEDIO_PAGO,
+	m.PAGO_MEDIO_PAGO
+from [gd_esquema].[Maestra] m
+where 
+	m.PAGO_TIPO_MEDIO_PAGO is not null and
+	m.PAGO_TIPO_MEDIO_PAGO is not null
 ----------------------------------/FKS/--------------------------------------------------------------
 
 -- Agregar FK en Venta que referencia a Cliente
@@ -270,5 +351,11 @@ FOREIGN KEY (cli_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
 ALTER TABLE [4_FLIAS_AFECTADAS].Vendedor
 ADD CONSTRAINT FK_Vendedor_Usuario
 FOREIGN KEY (ven_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
+
+-- Agregar FK en Domicilio que referencia a Localidad
+ALTER TABLE [4_FLIAS_AFECTADAS].Domicilio
+ADD CONSTRAINT FK_Domicilio_Localidad
+FOREIGN KEY (dom_loc) REFERENCES [4_FLIAS_AFECTADAS].Localidad(loc_id);
+
 
 
