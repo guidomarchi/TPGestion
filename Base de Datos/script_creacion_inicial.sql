@@ -57,12 +57,12 @@ where
 create table [4_FLIAS_AFECTADAS].SubRubro(
 	subrubro_id int identity(1,1) primary key,
 	subrubro_descripcion nvarchar(50),
-	rubro_id int foreign key references [4_FLIAS_AFECTADAS].Rubro(rubro_id)
+	subrubro_rubro int foreign key references [4_FLIAS_AFECTADAS].Rubro(rubro_id)
 );
 
 
 print 'Tabla SubRubro'
-insert into [4_FLIAS_AFECTADAS].SubRubro(	subrubro_descripcion ,	rubro_id)
+insert into [4_FLIAS_AFECTADAS].SubRubro(	subrubro_descripcion ,	subrubro_rubro)
 select distinct
 	PRODUCTO_SUB_RUBRO,
 	r.rubro_id
@@ -163,12 +163,13 @@ where
 print 'Tabla Vendedor'
 create table [4_FLIAS_AFECTADAS].Vendedor(
 	ven_id bigint identity(1,1) primary key,
+	ven_rs nvarchar(50),
 	ven_cuit nvarchar(50),
 	ven_mail nvarchar(50),
 	ven_usu_id bigint
 );
 
-insert into [4_FLIAS_AFECTADAS].Vendedor(ven_cuit, ven_mail , ven_usu_id )
+insert into [4_FLIAS_AFECTADAS].Vendedor(ven_rs,ven_cuit, ven_mail , ven_usu_id )
 SELECT DISTINCT
     m.VENDEDOR_RAZON_SOCIAL,
     m.VENDEDOR_MAIL,
@@ -212,8 +213,8 @@ create table [4_FLIAS_AFECTADAS].Cliente(
 	cli_nombre nvarchar(50),
 	cli_apellido nvarchar(50),
 	cli_dni decimal(18,0),
-	cli_fecha_nac date
-	cli_mail nvarchar(50)
+	cli_fecha_nac date,
+	cli_mail nvarchar(50),
 	cli_usu_id bigint
 );
 
@@ -316,6 +317,7 @@ WHERE m.CLI_USUARIO_DOMICILIO_CALLE IS NOT NULL AND
 ;
 
 
+print 'tabla MedioDePago'
 create table [4_FLIAS_AFECTADAS].MedioDePago(
 	mp_id bigint identity(1,1) primary key,
 	mp_tipo nvarchar(50),
@@ -330,6 +332,51 @@ from [gd_esquema].[Maestra] m
 where 
 	m.PAGO_TIPO_MEDIO_PAGO is not null and
 	m.PAGO_TIPO_MEDIO_PAGO is not null
+
+
+print 'tabla Producto'
+CREATE TABLE [4_FLIAS_AFECTADAS].Producto(
+	prod_id int identity(1,1) primary key,
+	prod_cod nvarchar(50),
+	prod_desc nvarchar(50),
+	prod_precio decimal(18,2),
+	prod_subRub int foreign key references [4_FLIAS_AFECTADAS].SubRubro(subrubro_id),
+	prod_marca int foreign key references [4_FLIAS_AFECTADAS].Marca(marca_id),
+	prod_modelo Decimal(18,0) foreign key references [4_FLIAS_AFECTADAS].Modelo(modelo_id)
+)
+
+insert into [4_FLIAS_AFECTADAS].Producto(
+	prod_cod , prod_desc , prod_precio , prod_subRub , prod_marca , prod_modelo
+)
+select distinct
+	PRODUCTO_CODIGO,
+	PRODUCTO_DESCRIPCION,
+	PRODUCTO_PRECIO,
+	s.subrubro_id,
+	m.marca_id,
+	mo.modelo_id
+from GD2C2024.gd_esquema.Maestra
+
+JOIN [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = PRODUCTO_RUBRO_DESCRIPCION
+JOIN [4_FLIAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = PRODUCTO_SUB_RUBRO AND r.rubro_id = s.subrubro_rubro
+JOIN [4_FLIAS_AFECTADAS].Marca m on m.marca_descripcion = PRODUCTO_MARCA
+JOIN [4_FLIAS_AFECTADAS].Modelo mo on mo.modelo_id = PRODUCTO_MOD_CODIGO
+
+where
+	
+	PRODUCTO_CODIGO is not null and
+	PRODUCTO_MARCA is not null and
+	PRODUCTO_MOD_CODIGO is not null and
+	PRODUCTO_PRECIO is not null and
+	PRODUCTO_SUB_RUBRO is not null and
+	PRODUCTO_RUBRO_DESCRIPCION is not null and
+	PRODUCTO_MOD_DESCRIPCION is not null and
+	PRODUCTO_DESCRIPCION is not null
+;
+
+
+
+
 ----------------------------------/FKS/--------------------------------------------------------------
 
 -- Agregar FK en Venta que referencia a Cliente
