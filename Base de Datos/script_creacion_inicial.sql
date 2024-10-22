@@ -374,8 +374,34 @@ where
 	PRODUCTO_DESCRIPCION is not null
 ;
 
+print 'tabla TipoEnvio'
+create table [4_FLIAS_AFECTADAS].TipoEnvio(
+	te_id int identity(1,1) primary key,
+	te_tipo nvarchar(50)
+)
+insert into [4_FLIAS_AFECTADAS].TipoEnvio(te_tipo)
+select distinct
+	ENVIO_TIPO
+from GD2C2024.gd_esquema.Maestra
+where ENVIO_TIPO is not null
+;
 
-
+print 'tabla Almacen'
+create table [4_FLIAS_AFECTADAS].Almacen(
+	alm_id decimal(18,0) primary key,
+	alm_costo decimal(18,2),
+	alm_dom int foreign key references [4_FLIAS_AFECTADAS].Domicilio(dom_id)
+)
+insert into [4_FLIAS_AFECTADAS].Almacen(alm_id,alm_costo,alm_dom)
+select distinct
+	ALMACEN_CODIGO,
+	ALMACEN_COSTO_DIA_AL,
+	d.dom_id
+from GD2C2024.gd_esquema.Maestra
+join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
+join [4_FLIAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
+join [4_FLIAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
+;
 
 ----------------------------------/FKS/--------------------------------------------------------------
 
