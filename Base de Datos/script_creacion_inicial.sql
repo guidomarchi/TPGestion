@@ -1,42 +1,74 @@
 USE [GD2C2024]
 GO
 
+-- Eliminar constraints
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Venta_Cliente', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Venta DROP CONSTRAINT FK_Venta_Cliente;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Factura_Vendedor', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Factura DROP CONSTRAINT FK_Factura_Vendedor;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Cliente_Usuario', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Cliente DROP CONSTRAINT FK_Cliente_Usuario;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Vendedor_Usuario', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Vendedor DROP CONSTRAINT FK_Vendedor_Usuario;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Domicilio_Localidad', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Domicilio DROP CONSTRAINT FK_Domicilio_Localidad;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Producto', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].AlmacenXProducto DROP CONSTRAINT FK_Producto;
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Almacen', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].AlmacenXProducto DROP CONSTRAINT FK_Almacen; 
+
 -- Eliminar tablas existentes si ya existen
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Factura', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Factura;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Producto', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Producto;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Venta', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Venta;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Cliente', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Cliente;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Vendedor', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Vendedor;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Usuario', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Usuario;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Almacen', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Almacen;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Domicilio', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Domicilio;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Localidad', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Localidad;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Provincia', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Provincia;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.SubRubro', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].SubRubro;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Rubro', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Rubro;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Marca', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Marca;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.Modelo', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].Modelo;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.MedioDePago', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].MedioDePago;
-IF OBJECT_ID('4_FLIAS_AFECTADAS.TipoEnvio', 'U') IS NOT NULL DROP TABLE [4_FLIAS_AFECTADAS].TipoEnvio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Factura', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Factura;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Producto', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Producto;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Venta', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Venta;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Cliente', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Cliente;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Vendedor', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Vendedor;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Usuario', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Usuario;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Almacen', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Almacen;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Domicilio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Domicilio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Localidad', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Localidad;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Provincia', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Provincia;
+IF OBJECT_ID('4_FILAS_AFECTADAS.SubRubro', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].SubRubro;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Rubro', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Rubro;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Marca', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Marca;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Modelo', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Modelo;
+IF OBJECT_ID('4_FILAS_AFECTADAS.MedioDePago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].MedioDePago;
+IF OBJECT_ID('4_FILAS_AFECTADAS.TipoEnvio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].TipoEnvio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.AlmacenXProducto', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].AlmacenXProducto;
+
+-- Eliminar procedures existentes si ya existen
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_MODELO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MODELO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_MARCA') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MARCA
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_RUBRO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_RUBRO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_SUBRUBRO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_SUBRUBRO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_PROVINCIA') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PROVINCIA
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_LOCALIDAD') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_LOCALIDAD
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_USUARIO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_USUARIO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_VENDEDOR') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_VENDEDOR
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_FACTURA') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_FACTURA
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_CLIENTE') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_CLIENTE
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_VENTA') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_VENTA
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_DOMICILIO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DOMICILIO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_MEDIODEPAGO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MEDIODEPAGO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_PRODUCTO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PRODUCTO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_TIPOENVIO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_TIPOENVIO
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_ALMACEN') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ALMACEN
+IF OBJECT_ID('[4_FILAS_AFECTADAS].CARGAR_ALMACENXPRODUCTO') IS NOT NULL DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ALMACENXPRODUCTO
 
 -- Eliminar esquema si ya existe
-IF EXISTS (SELECT * FROM sys.schemas WHERE name = '4_FLIAS_AFECTADAS')
+IF EXISTS (SELECT * FROM sys.schemas WHERE name = '4_FILAS_AFECTADAS')
 BEGIN
-    DROP SCHEMA [4_FLIAS_AFECTADAS];
+    DROP SCHEMA [4_FILAS_AFECTADAS];
 END
 GO
 
-CREATE SCHEMA [4_FLIAS_AFECTADAS]
+CREATE SCHEMA [4_FILAS_AFECTADAS]
 GO
 
-CREATE TABLE [4_FLIAS_AFECTADAS].Modelo(
+CREATE TABLE [4_FILAS_AFECTADAS].Modelo(
     modelo_id Decimal(18,0) PRIMARY KEY,
     modelo_descripcion NVARCHAR(50)
 );
 GO
 
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MODELO
+AS
+BEGIN
 print 'Tabla Modelo'
-insert into [4_FLIAS_AFECTADAS].Modelo(modelo_id, modelo_descripcion)
+insert into [4_FILAS_AFECTADAS].Modelo(modelo_id, modelo_descripcion)
 select distinct
 	PRODUCTO_MOD_CODIGO,
 	PRODUCTO_MOD_DESCRIPCION
@@ -44,65 +76,84 @@ from GD2C2024.gd_esquema.Maestra
 where
 	PRODUCTO_MOD_CODIGO is not null and
 	PRODUCTO_MOD_DESCRIPCION is not null ;
+END 
+GO
 
-
-CREATE TABLE [4_FLIAS_AFECTADAS].Marca(
+CREATE TABLE [4_FILAS_AFECTADAS].Marca(
     marca_id INT IDENTITY(1,1) PRIMARY KEY,
     marca_descripcion NVARCHAR(50)
 );
 GO
 
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MARCA
+AS
+BEGIN
 print 'Tabla Marca'
-insert into [4_FLIAS_AFECTADAS].Marca(marca_descripcion)
+insert into [4_FILAS_AFECTADAS].Marca(marca_descripcion)
 select distinct
 	PRODUCTO_MARCA
 from GD2C2024.gd_esquema.Maestra m
 where
 PRODUCTO_MARCA is not null 
 ;
+END 
+GO
 
-create table [4_FLIAS_AFECTADAS].Rubro(
+create table [4_FILAS_AFECTADAS].Rubro(
 	rubro_id int identity(1,1) primary key,
 	rubro_descripcion nvarchar(50)
 );
+GO
 
-
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_RUBRO
+AS
+BEGIN
 print 'Tabla Rubro'
-insert into [4_FLIAS_AFECTADAS].Rubro(rubro_descripcion)
+insert into [4_FILAS_AFECTADAS].Rubro(rubro_descripcion)
 select distinct
 	PRODUCTO_RUBRO_DESCRIPCION
 from GD2C2024.gd_esquema.Maestra m
 where
 	PRODUCTO_RUBRO_DESCRIPCION is not null
 ;
+END 
+GO
 
-create table [4_FLIAS_AFECTADAS].SubRubro(
+create table [4_FILAS_AFECTADAS].SubRubro(
 	subrubro_id int identity(1,1) primary key,
 	subrubro_descripcion nvarchar(50),
-	subrubro_rubro int foreign key references [4_FLIAS_AFECTADAS].Rubro(rubro_id)
+	subrubro_rubro int foreign key references [4_FILAS_AFECTADAS].Rubro(rubro_id)
 );
+GO
 
-
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_SUBRUBRO
+AS
+BEGIN
 print 'Tabla SubRubro'
-insert into [4_FLIAS_AFECTADAS].SubRubro(	subrubro_descripcion ,	subrubro_rubro)
+insert into [4_FILAS_AFECTADAS].SubRubro(	subrubro_descripcion ,	subrubro_rubro)
 select distinct
 	PRODUCTO_SUB_RUBRO,
 	r.rubro_id
 from GD2C2024.gd_esquema.Maestra m
-join [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = PRODUCTO_RUBRO_DESCRIPCION
+join [4_FILAS_AFECTADAS].Rubro r on r.rubro_descripcion = PRODUCTO_RUBRO_DESCRIPCION
 where
 	PRODUCTO_SUB_RUBRO is not null and
 	PRODUCTO_RUBRO_DESCRIPCION is not null 
 ;
+END 
+GO
 
-create table [4_FLIAS_AFECTADAS].Provincia(
+create table [4_FILAS_AFECTADAS].Provincia(
 	prov_id int identity(1,1) primary key,
 	prov_nombre nvarchar(50)
 );
+GO
 
-
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PROVINCIA
+AS
+BEGIN
 print 'Tabla Provincia'
-insert into [4_FLIAS_AFECTADAS].Provincia(prov_nombre)
+insert into [4_FILAS_AFECTADAS].Provincia(prov_nombre)
 select distinct
 	m.ALMACEN_PROVINCIA
 from GD2C2024.gd_esquema.Maestra m
@@ -118,49 +169,60 @@ select distinct
 from GD2C2024.gd_esquema.Maestra m
 where VEN_USUARIO_DOMICILIO_PROVINCIA is not null
 ;
+END 
+GO
 
 
-create table [4_FLIAS_AFECTADAS].Localidad(
+create table [4_FILAS_AFECTADAS].Localidad(
 	loc_id int identity(1,1) primary key,
 	loc_nombre nvarchar(50),
-	loc_prov int foreign key references [4_FLIAS_AFECTADAS].Provincia(prov_id)
+	loc_prov int foreign key references [4_FILAS_AFECTADAS].Provincia(prov_id)
 );
+GO
 
-
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_LOCALIDAD
+AS
+BEGIN
 print 'Tabla Localidad'
-insert into [4_FLIAS_AFECTADAS].Localidad(loc_nombre,loc_prov)
+insert into [4_FILAS_AFECTADAS].Localidad(loc_nombre,loc_prov)
 select distinct
 	m.ALMACEN_Localidad,
 	p.prov_id
 from GD2C2024.gd_esquema.Maestra m
-join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.ALMACEN_PROVINCIA
+join [4_FILAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.ALMACEN_PROVINCIA
 where ALMACEN_Localidad is not null and ALMACEN_PROVINCIA is not null 
 union
 select distinct
 	m.CLI_USUARIO_DOMICILIO_LOCALIDAD,
 	p.prov_id
 from GD2C2024.gd_esquema.Maestra m
-join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.CLI_USUARIO_DOMICILIO_PROVINCIA
+join [4_FILAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.CLI_USUARIO_DOMICILIO_PROVINCIA
 where CLI_USUARIO_DOMICILIO_LOCALIDAD is not null and CLI_USUARIO_DOMICILIO_PROVINCIA is not null
 union
 select distinct
 	m.VEN_USUARIO_DOMICILIO_LOCALIDAD,
 	p.prov_id
 from GD2C2024.gd_esquema.Maestra m
-join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.VEN_USUARIO_DOMICILIO_PROVINCIA
+join [4_FILAS_AFECTADAS].Provincia p on p.prov_nombre = 	m.VEN_USUARIO_DOMICILIO_PROVINCIA
 where VEN_USUARIO_DOMICILIO_LOCALIDAD is not null and VEN_USUARIO_DOMICILIO_PROVINCIA is not null
+END 
+GO
 
 --Hay localidades con dos provincias!! Ver
 
 print 'Tabla Usuario'
-create table [4_FLIAS_AFECTADAS].Usuario(
+create table [4_FILAS_AFECTADAS].Usuario(
 	usu_id bigint identity(1,1) primary key,
 	usu_nombre nvarchar(50),
 	usu_contrasenia nvarchar(50),
 	usu_fecha_creacion date,
 );
+GO
 
-insert into [4_FLIAS_AFECTADAS].Usuario(usu_nombre,usu_contrasenia,usu_fecha_creacion)
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_USUARIO
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Usuario(usu_nombre,usu_contrasenia,usu_fecha_creacion)
 select distinct
 	m.VEN_USUARIO_NOMBRE,
 	m.VEN_USUARIO_PASS,
@@ -179,26 +241,31 @@ where
 	m.CLI_USUARIO_PASS is not null and
 	m.CLI_USUARIO_NOMBRE is not null
 ;
-
+END 
+GO
 
 
 print 'Tabla Vendedor'
-create table [4_FLIAS_AFECTADAS].Vendedor(
+create table [4_FILAS_AFECTADAS].Vendedor(
 	ven_id bigint identity(1,1) primary key,
 	ven_rs nvarchar(50),
 	ven_cuit nvarchar(50),
 	ven_mail nvarchar(50),
 	ven_usu_id bigint
 );
+GO
 
-insert into [4_FLIAS_AFECTADAS].Vendedor(ven_rs,ven_cuit, ven_mail , ven_usu_id )
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_VENDEDOR
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Vendedor(ven_rs,ven_cuit, ven_mail , ven_usu_id )
 SELECT DISTINCT
     m.VENDEDOR_RAZON_SOCIAL,
     m.VENDEDOR_CUIT,
     m.VENDEDOR_MAIL,
     u.usu_id
 FROM GD2C2024.gd_esquema.Maestra m
-JOIN [4_FLIAS_AFECTADAS].Usuario u 
+JOIN [4_FILAS_AFECTADAS].Usuario u 
     ON m.VEN_USUARIO_NOMBRE = u.usu_nombre
     AND m.VEN_USUARIO_PASS = u.usu_contrasenia
 WHERE 
@@ -208,29 +275,36 @@ WHERE
     AND m.VEN_USUARIO_NOMBRE IS NOT NULL 
     AND m.VEN_USUARIO_PASS IS NOT NULL
 ;
-
+END 
+GO
 
 print 'Tabla Facturas'
 
-create table [4_FLIAS_AFECTADAS].Factura(
+create table [4_FILAS_AFECTADAS].Factura(
 	fac_nro decimal(18,0) primary key,
 	fac_fecha date,
 	fac_total decimal(18,2),
 	fac_vendedor_id bigint
 );
+GO
 
-insert into [4_FLIAS_AFECTADAS].Factura(fac_nro,fac_fecha,fac_total,fac_vendedor_id)
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_FACTURA
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Factura(fac_nro,fac_fecha,fac_total,fac_vendedor_id)
 SELECT distinct m.FACTURA_NUMERO, m.FACTURA_FECHA, m.FACTURA_TOTAL, v.ven_id  FROM GD2C2024.gd_esquema.Maestra m
 join(select m.PUBLICACION_CODIGO, m.VENDEDOR_CUIT 
 	 from  GD2C2024.gd_esquema.Maestra m
 	 where m.PUBLICACION_CODIGO is not null and m.VENDEDOR_CUIT is not null)  m2 on m2.PUBLICACION_CODIGO = m.PUBLICACION_CODIGO
-join [4_FLIAS_AFECTADAS].Vendedor v on (m2.VENDEDOR_CUIT = v.ven_cuit)
+join [4_FILAS_AFECTADAS].Vendedor v on (m2.VENDEDOR_CUIT = v.ven_cuit)
 where m.FACTURA_NUMERO is not null and m.PUBLICACION_CODIGO is not null
 ;
+END 
+GO
 
 print 'Tabla Clientes'
 
-create table [4_FLIAS_AFECTADAS].Cliente(
+create table [4_FILAS_AFECTADAS].Cliente(
 	cli_id bigint identity(1,1) primary key,
 	cli_nombre nvarchar(50),
 	cli_apellido nvarchar(50),
@@ -239,8 +313,12 @@ create table [4_FLIAS_AFECTADAS].Cliente(
 	cli_mail nvarchar(50),
 	cli_usu_id bigint
 );
+GO
 
-insert into [4_FLIAS_AFECTADAS].Cliente(cli_nombre, cli_apellido, cli_dni, cli_fecha_nac, cli_mail, cli_usu_id)
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_CLIENTE
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Cliente(cli_nombre, cli_apellido, cli_dni, cli_fecha_nac, cli_mail, cli_usu_id)
 select distinct
 	m.CLIENTE_NOMBRE,
 	m.CLIENTE_APELLIDO,
@@ -249,7 +327,7 @@ select distinct
 	m.CLIENTE_MAIL,
 	u.usu_id
 from GD2C2024.gd_esquema.Maestra m
-JOIN [4_FLIAS_AFECTADAS].Usuario u 
+JOIN [4_FILAS_AFECTADAS].Usuario u 
     ON m.CLI_USUARIO_NOMBRE = u.usu_nombre
     AND m.CLI_USUARIO_PASS = u.usu_contrasenia and m.CLI_USUARIO_FECHA_CREACION = u.usu_fecha_creacion
 where 
@@ -257,24 +335,31 @@ where
 	m.CLI_USUARIO_PASS is not null and
 	m.CLI_USUARIO_NOMBRE is not null
 ;
+END 
+GO
 
 print 'tabla Ventas'
-create table [4_FLIAS_AFECTADAS].Venta(
+create table [4_FILAS_AFECTADAS].Venta(
 	ven_codigo decimal(18,0) primary key,
 	ven_fecha date,
 	ven_total decimal(18,2),
 	ven_cli_id bigint
 );
+go
 
-insert into [4_FLIAS_AFECTADAS].Venta(ven_codigo, ven_fecha, ven_total, ven_cli_id)
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_VENTA
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Venta(ven_codigo, ven_fecha, ven_total, ven_cli_id)
 select distinct m.VENTA_CODIGO, m.VENTA_FECHA, m.VENTA_TOTAL, c.cli_id
 from GD2C2024.gd_esquema.Maestra m
-join [4_FLIAS_AFECTADAS].Cliente c on (m.CLIENTE_DNI = c.cli_dni and m.CLIENTE_NOMBRE = c.cli_nombre)
+join [4_FILAS_AFECTADAS].Cliente c on (m.CLIENTE_DNI = c.cli_dni and m.CLIENTE_NOMBRE = c.cli_nombre)
 where m.VENTA_CODIGO is not null
-
+END 
+GO
 
 print 'tabla Domicilio'
-CREATE TABLE [4_FLIAS_AFECTADAS].Domicilio (
+CREATE TABLE [4_FILAS_AFECTADAS].Domicilio (
     dom_id INT PRIMARY KEY IDENTITY(1,1),
     dom_calle NVARCHAR(50),
     dom_no_calle DECIMAL(18,0),
@@ -283,9 +368,12 @@ CREATE TABLE [4_FLIAS_AFECTADAS].Domicilio (
     dom_cp NVARCHAR(50),
     dom_loc INT
 );
+GO
 
-
-INSERT INTO [4_FLIAS_AFECTADAS].Domicilio (
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DOMICILIO
+AS
+BEGIN
+INSERT INTO [4_FILAS_AFECTADAS].Domicilio (
     dom_calle,
     dom_no_calle,
     dom_piso,
@@ -293,7 +381,6 @@ INSERT INTO [4_FLIAS_AFECTADAS].Domicilio (
     dom_cp,
     dom_loc
 )
-
 SELECT 
     VEN_USUARIO_DOMICILIO_CALLE AS dom_calle,
     VEN_USUARIO_DOMICILIO_NRO_CALLE AS dom_no_calle,
@@ -302,8 +389,8 @@ SELECT
     VEN_USUARIO_DOMICILIO_CP AS dom_cp,
     l.loc_id
 FROM [gd_esquema].[Maestra] m
-JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = m.VEN_USUARIO_DOMICILIO_LOCALIDAD
-JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = m.VEN_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
+JOIN [4_FILAS_AFECTADAS].Localidad l ON l.loc_nombre = m.VEN_USUARIO_DOMICILIO_LOCALIDAD
+JOIN [4_FILAS_AFECTADAS].Provincia p ON p.prov_nombre = m.VEN_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
 WHERE m.VEN_USUARIO_DOMICILIO_CALLE IS NOT NULL AND m.VEN_USUARIO_DOMICILIO_CP IS NOT NULL AND m.VEN_USUARIO_DOMICILIO_NRO_CALLE IS NOT NULL AND l.loc_id IS NOT NULL 
 
 UNION
@@ -316,8 +403,8 @@ SELECT
     null AS dom_cp,
     l.loc_id
 FROM [gd_esquema].Maestra 
-JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = ALMACEN_Localidad
-JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = ALMACEN_PROVINCIA and l.loc_prov = p.prov_id
+JOIN [4_FILAS_AFECTADAS].Localidad l ON l.loc_nombre = ALMACEN_Localidad
+JOIN [4_FILAS_AFECTADAS].Provincia p ON p.prov_nombre = ALMACEN_PROVINCIA and l.loc_prov = p.prov_id
 WHERE ALMACEN_CALLE IS NOT NULL AND ALMACEN_NRO_CALLE IS NOT NULL AND l.loc_id IS NOT NULL 
 
 UNION 
@@ -330,23 +417,28 @@ SELECT
     CLI_USUARIO_DOMICILIO_CP AS dom_cp,
     l.loc_id
 FROM [gd_esquema].[Maestra] m
-JOIN [4_FLIAS_AFECTADAS].Localidad l ON l.loc_nombre = m.CLI_USUARIO_DOMICILIO_LOCALIDAD
-JOIN [4_FLIAS_AFECTADAS].Provincia p ON p.prov_nombre = m.CLI_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
+JOIN [4_FILAS_AFECTADAS].Localidad l ON l.loc_nombre = m.CLI_USUARIO_DOMICILIO_LOCALIDAD
+JOIN [4_FILAS_AFECTADAS].Provincia p ON p.prov_nombre = m.CLI_USUARIO_DOMICILIO_PROVINCIA and l.loc_prov = p.prov_id
 WHERE m.CLI_USUARIO_DOMICILIO_CALLE IS NOT NULL AND 
 	m.CLI_USUARIO_DOMICILIO_CP IS NOT NULL AND 
 	m.CLI_USUARIO_DOMICILIO_NRO_CALLE IS NOT NULL AND 
 	l.loc_id IS NOT NULL 
 ;
-
+END 
+GO
 
 print 'tabla MedioDePago'
-create table [4_FLIAS_AFECTADAS].MedioDePago(
+create table [4_FILAS_AFECTADAS].MedioDePago(
 	mp_id bigint identity(1,1) primary key,
 	mp_tipo nvarchar(50),
 	mp_nombre nvarchar(50)
 )
+GO
 
-insert into [4_FLIAS_AFECTADAS].MedioDePago(mp_tipo,mp_nombre)
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MEDIODEPAGO
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].MedioDePago(mp_tipo,mp_nombre)
 select distinct
 	m.PAGO_TIPO_MEDIO_PAGO,
 	m.PAGO_MEDIO_PAGO
@@ -354,20 +446,25 @@ from [gd_esquema].[Maestra] m
 where 
 	m.PAGO_TIPO_MEDIO_PAGO is not null and
 	m.PAGO_TIPO_MEDIO_PAGO is not null
-
+END 
+GO
 
 print 'tabla Producto'
-CREATE TABLE [4_FLIAS_AFECTADAS].Producto(
+CREATE TABLE [4_FILAS_AFECTADAS].Producto(
 	prod_id int identity(1,1) primary key,
 	prod_cod nvarchar(50),
 	prod_desc nvarchar(50),
 	prod_precio decimal(18,2),
-	prod_subRub int foreign key references [4_FLIAS_AFECTADAS].SubRubro(subrubro_id),
-	prod_marca int foreign key references [4_FLIAS_AFECTADAS].Marca(marca_id),
-	prod_modelo Decimal(18,0) foreign key references [4_FLIAS_AFECTADAS].Modelo(modelo_id)
+	prod_subRub int foreign key references [4_FILAS_AFECTADAS].SubRubro(subrubro_id),
+	prod_marca int foreign key references [4_FILAS_AFECTADAS].Marca(marca_id),
+	prod_modelo Decimal(18,0) foreign key references [4_FILAS_AFECTADAS].Modelo(modelo_id)
 )
+GO
 
-insert into [4_FLIAS_AFECTADAS].Producto(
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PRODUCTO
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Producto(
 	prod_cod , prod_desc , prod_precio , prod_subRub , prod_marca , prod_modelo
 )
 select distinct
@@ -379,10 +476,10 @@ select distinct
 	mo.modelo_id
 from GD2C2024.gd_esquema.Maestra
 
-JOIN [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = PRODUCTO_RUBRO_DESCRIPCION
-JOIN [4_FLIAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = PRODUCTO_SUB_RUBRO AND r.rubro_id = s.subrubro_rubro
-JOIN [4_FLIAS_AFECTADAS].Marca m on m.marca_descripcion = PRODUCTO_MARCA
-JOIN [4_FLIAS_AFECTADAS].Modelo mo on mo.modelo_id = PRODUCTO_MOD_CODIGO
+JOIN [4_FILAS_AFECTADAS].Rubro r on r.rubro_descripcion = PRODUCTO_RUBRO_DESCRIPCION
+JOIN [4_FILAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = PRODUCTO_SUB_RUBRO AND r.rubro_id = s.subrubro_rubro
+JOIN [4_FILAS_AFECTADAS].Marca m on m.marca_descripcion = PRODUCTO_MARCA
+JOIN [4_FILAS_AFECTADAS].Modelo mo on mo.modelo_id = PRODUCTO_MOD_CODIGO
 
 where
 	
@@ -395,59 +492,80 @@ where
 	PRODUCTO_MOD_DESCRIPCION is not null and
 	PRODUCTO_DESCRIPCION is not null
 ;
+END 
+GO
+
 
 print 'tabla TipoEnvio'
-create table [4_FLIAS_AFECTADAS].TipoEnvio(
+create table [4_FILAS_AFECTADAS].TipoEnvio(
 	te_id int identity(1,1) primary key,
 	te_tipo nvarchar(50)
 )
-insert into [4_FLIAS_AFECTADAS].TipoEnvio(te_tipo)
+GO
+
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_TIPOENVIO
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].TipoEnvio(te_tipo)
 select distinct
 	ENVIO_TIPO
 from GD2C2024.gd_esquema.Maestra
 where ENVIO_TIPO is not null
 ;
+END 
+GO
 
 print 'tabla Almacen'
-create table [4_FLIAS_AFECTADAS].Almacen(
+create table [4_FILAS_AFECTADAS].Almacen(
 	alm_id decimal(18,0) primary key,
 	alm_costo decimal(18,2),
-	alm_dom int foreign key references [4_FLIAS_AFECTADAS].Domicilio(dom_id)
+	alm_dom int foreign key references [4_FILAS_AFECTADAS].Domicilio(dom_id)
 )
-insert into [4_FLIAS_AFECTADAS].Almacen(alm_id,alm_costo,alm_dom)
+GO
+
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ALMACEN
+AS
+BEGIN
+insert into [4_FILAS_AFECTADAS].Almacen(alm_id,alm_costo,alm_dom)
 select distinct
 	ALMACEN_CODIGO,
 	ALMACEN_COSTO_DIA_AL,
 	d.dom_id
 from GD2C2024.gd_esquema.Maestra
-join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
-join [4_FLIAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
-join [4_FLIAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
+join [4_FILAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
+join [4_FILAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
+join [4_FILAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
 where ALMACEN_CODIGO is not null and ALMACEN_COSTO_DIA_AL is not null and d.dom_id is not null
 ;
+END 
+GO
 
-create table [4_FLIAS_AFECTADAS].AlmacenXProducto(
+create table [4_FILAS_AFECTADAS].AlmacenXProducto(
 	axp_prod int not null,
 	axp_alm decimal(18,0) not null,
 	axp_id int identity(1,1) primary key
 )
+GO
 
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ALMACENXPRODUCTO
+AS
+BEGIN
 PRINT 'Tabla AlmacenXProductos'
-INSERT INTO [4_FLIAS_AFECTADAS].AlmacenXProducto(axp_prod, axp_alm)
+INSERT INTO [4_FILAS_AFECTADAS].AlmacenXProducto(axp_prod, axp_alm)
 SELECT DISTINCT
     p.prod_id, 
     a.alm_id
 FROM 
     GD2C2024.gd_esquema.Maestra m
-JOIN [4_FLIAS_AFECTADAS].Producto p ON m.PRODUCTO_CODIGO = p.prod_cod and m.PRODUCTO_MOD_CODIGO = p.prod_modelo
-join [4_FLIAS_AFECTADAS].Marca ma on ma.marca_descripcion = m.PRODUCTO_MARCA and p.prod_marca = ma.marca_id
-join [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = m.PRODUCTO_RUBRO_DESCRIPCION
-join [4_FLIAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = m.PRODUCTO_SUB_RUBRO and s.subrubro_id = p.prod_subRub and s.subrubro_rubro = r.rubro_id
-join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
-join [4_FLIAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
-join [4_FLIAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
+JOIN [4_FILAS_AFECTADAS].Producto p ON m.PRODUCTO_CODIGO = p.prod_cod and m.PRODUCTO_MOD_CODIGO = p.prod_modelo
+join [4_FILAS_AFECTADAS].Marca ma on ma.marca_descripcion = m.PRODUCTO_MARCA and p.prod_marca = ma.marca_id
+join [4_FILAS_AFECTADAS].Rubro r on r.rubro_descripcion = m.PRODUCTO_RUBRO_DESCRIPCION
+join [4_FILAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = m.PRODUCTO_SUB_RUBRO and s.subrubro_id = p.prod_subRub and s.subrubro_rubro = r.rubro_id
+join [4_FILAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
+join [4_FILAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
+join [4_FILAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
 JOIN 
-    [4_FLIAS_AFECTADAS].Almacen a ON m.ALMACEN_CODIGO = a.alm_id and a.alm_costo = m.ALMACEN_COSTO_DIA_AL and a.alm_dom = d.dom_id
+    [4_FILAS_AFECTADAS].Almacen a ON m.ALMACEN_CODIGO = a.alm_id and a.alm_costo = m.ALMACEN_COSTO_DIA_AL and a.alm_dom = d.dom_id
 WHERE 
     m.PRODUCTO_CODIGO IS NOT NULL 
     AND m.ALMACEN_CODIGO IS NOT NULL 
@@ -457,6 +575,7 @@ WHERE
     AND m.PRODUCTO_SUB_RUBRO IS NOT NULL 
 	and ALMACEN_COSTO_DIA_AL is not null 
 	and d.dom_id is not null;
+END 
 GO
 
 
@@ -465,39 +584,39 @@ GO
 
 
 -- Agregar FK en Venta que referencia a Cliente
-ALTER TABLE [4_FLIAS_AFECTADAS].Venta
+ALTER TABLE [4_FILAS_AFECTADAS].Venta
 ADD CONSTRAINT FK_Venta_Cliente
-FOREIGN KEY (ven_cli_id) REFERENCES [4_FLIAS_AFECTADAS].Cliente(cli_id);
+FOREIGN KEY (ven_cli_id) REFERENCES [4_FILAS_AFECTADAS].Cliente(cli_id);
 
 -- Agregar FK en Factura que referencia a Vendedor
-ALTER TABLE [4_FLIAS_AFECTADAS].Factura
+ALTER TABLE [4_FILAS_AFECTADAS].Factura
 ADD CONSTRAINT FK_Factura_Vendedor
-FOREIGN KEY (fac_vendedor_id) REFERENCES [4_FLIAS_AFECTADAS].Vendedor(ven_id);
+FOREIGN KEY (fac_vendedor_id) REFERENCES [4_FILAS_AFECTADAS].Vendedor(ven_id);
 
 -- Agregar FK en Cliente que referencia a Usuario
-ALTER TABLE [4_FLIAS_AFECTADAS].Cliente
+ALTER TABLE [4_FILAS_AFECTADAS].Cliente
 ADD CONSTRAINT FK_Cliente_Usuario
-FOREIGN KEY (cli_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
+FOREIGN KEY (cli_usu_id) REFERENCES [4_FILAS_AFECTADAS].Usuario(usu_id);
 
 -- Agregar FK en Vendedor que referencia a Usuario
-ALTER TABLE [4_FLIAS_AFECTADAS].Vendedor
+ALTER TABLE [4_FILAS_AFECTADAS].Vendedor
 ADD CONSTRAINT FK_Vendedor_Usuario
-FOREIGN KEY (ven_usu_id) REFERENCES [4_FLIAS_AFECTADAS].Usuario(usu_id);
+FOREIGN KEY (ven_usu_id) REFERENCES [4_FILAS_AFECTADAS].Usuario(usu_id);
 
 -- Agregar FK en Domicilio que referencia a Localidad
-ALTER TABLE [4_FLIAS_AFECTADAS].Domicilio
+ALTER TABLE [4_FILAS_AFECTADAS].Domicilio
 ADD CONSTRAINT FK_Domicilio_Localidad
-FOREIGN KEY (dom_loc) REFERENCES [4_FLIAS_AFECTADAS].Localidad(loc_id);
+FOREIGN KEY (dom_loc) REFERENCES [4_FILAS_AFECTADAS].Localidad(loc_id);
 
 
 -- Agregar FK en AlmacenXProductos que referencia a Producto
-ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProducto
+ALTER TABLE [4_FILAS_AFECTADAS].AlmacenXProducto
 ADD CONSTRAINT FK_Producto FOREIGN KEY (axp_prod) 
-    REFERENCES [4_FLIAS_AFECTADAS].Producto (prod_id);
+    REFERENCES [4_FILAS_AFECTADAS].Producto (prod_id);
 
 
 -- Agregar FK en AlmacenXProductos que referencia a Almacen
-ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProducto
+ALTER TABLE [4_FILAS_AFECTADAS].AlmacenXProducto
 ADD CONSTRAINT FK_Almacen FOREIGN KEY (axp_alm) 
-    REFERENCES [4_FLIAS_AFECTADAS].Almacen (alm_id);
+    REFERENCES [4_FILAS_AFECTADAS].Almacen (alm_id);
 GO
