@@ -443,16 +443,20 @@ JOIN [4_FLIAS_AFECTADAS].Producto p ON m.PRODUCTO_CODIGO = p.prod_cod and m.PROD
 join [4_FLIAS_AFECTADAS].Marca ma on ma.marca_descripcion = m.PRODUCTO_MARCA and p.prod_marca = ma.marca_id
 join [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = m.PRODUCTO_RUBRO_DESCRIPCION
 join [4_FLIAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = m.PRODUCTO_SUB_RUBRO and s.subrubro_id = p.prod_subRub and s.subrubro_rubro = r.rubro_id
-
+join [4_FLIAS_AFECTADAS].Provincia p on p.prov_nombre = ALMACEN_PROVINCIA
+join [4_FLIAS_AFECTADAS].Localidad l on l.loc_nombre = ALMACEN_Localidad and l.loc_prov = p.prov_id
+join [4_FLIAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no_calle = ALMACEN_NRO_CALLE and d.dom_loc = l.loc_id
 JOIN 
-    [4_FLIAS_AFECTADAS].Almacen a ON m.ALMACEN_CODIGO = a.alm_id
+    [4_FLIAS_AFECTADAS].Almacen a ON m.ALMACEN_CODIGO = a.alm_id and a.alm_costo = m.ALMACEN_COSTO_DIA_AL and a.alm_dom = d.dom_id
 WHERE 
     m.PRODUCTO_CODIGO IS NOT NULL 
     AND m.ALMACEN_CODIGO IS NOT NULL 
     AND m.PRODUCTO_MOD_CODIGO IS NOT NULL
     AND m.PRODUCTO_MARCA IS NOT NULL
     AND m.PRODUCTO_RUBRO_DESCRIPCION IS NOT NULL
-    AND m.PRODUCTO_SUB_RUBRO IS NOT NULL;
+    AND m.PRODUCTO_SUB_RUBRO IS NOT NULL 
+	and ALMACEN_COSTO_DIA_AL is not null 
+	and d.dom_id is not null;
 GO
 
 
