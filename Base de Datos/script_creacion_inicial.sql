@@ -426,6 +426,37 @@ join [4_FLIAS_AFECTADAS].Domicilio d on d.dom_calle = ALMACEN_CALLE and d.dom_no
 where ALMACEN_CODIGO is not null and ALMACEN_COSTO_DIA_AL is not null and d.dom_id is not null
 ;
 
+create table [4_FLIAS_AFECTADAS].AlmacenXProducto(
+	axp_prod int not null,
+	axp_alm decimal(18,0) not null,
+	axp_id int identity(1,1) primary key
+)
+
+PRINT 'Tabla AlmacenXProductos'
+INSERT INTO [4_FLIAS_AFECTADAS].AlmacenXProducto(axp_prod, axp_alm)
+SELECT DISTINCT
+    p.prod_id, 
+    a.alm_id
+FROM 
+    GD2C2024.gd_esquema.Maestra m
+JOIN [4_FLIAS_AFECTADAS].Producto p ON m.PRODUCTO_CODIGO = p.prod_cod and m.PRODUCTO_MOD_CODIGO = p.prod_modelo
+join [4_FLIAS_AFECTADAS].Marca ma on ma.marca_descripcion = m.PRODUCTO_MARCA and p.prod_marca = ma.marca_id
+join [4_FLIAS_AFECTADAS].Rubro r on r.rubro_descripcion = m.PRODUCTO_RUBRO_DESCRIPCION
+join [4_FLIAS_AFECTADAS].SubRubro s on s.subrubro_descripcion = m.PRODUCTO_SUB_RUBRO and s.subrubro_id = p.prod_subRub and s.subrubro_rubro = r.rubro_id
+
+JOIN 
+    [4_FLIAS_AFECTADAS].Almacen a ON m.ALMACEN_CODIGO = a.alm_id
+WHERE 
+    m.PRODUCTO_CODIGO IS NOT NULL 
+    AND m.ALMACEN_CODIGO IS NOT NULL 
+    AND m.PRODUCTO_MOD_CODIGO IS NOT NULL
+    AND m.PRODUCTO_MARCA IS NOT NULL
+    AND m.PRODUCTO_RUBRO_DESCRIPCION IS NOT NULL
+    AND m.PRODUCTO_SUB_RUBRO IS NOT NULL;
+GO
+
+
+
 ----------------------------------/FKS/--------------------------------------------------------------
 
 
@@ -454,3 +485,15 @@ ALTER TABLE [4_FLIAS_AFECTADAS].Domicilio
 ADD CONSTRAINT FK_Domicilio_Localidad
 FOREIGN KEY (dom_loc) REFERENCES [4_FLIAS_AFECTADAS].Localidad(loc_id);
 
+
+-- Agregar FK en AlmacenXProductos que referencia a Producto
+ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProductos
+ADD CONSTRAINT FK_Producto FOREIGN KEY (axp_prod_id) 
+    REFERENCES [4_FLIAS_AFECTADAS].Producto (prod_id);
+
+
+-- Agregar FK en AlmacenXProductos que referencia a Almacen
+ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProductos
+ADD CONSTRAINT FK_Almacen FOREIGN KEY (axp_almacen_id) 
+    REFERENCES [4_FLIAS_AFECTADAS].Almacen (almacen_id);
+GO
