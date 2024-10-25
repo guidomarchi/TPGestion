@@ -487,13 +487,13 @@ FOREIGN KEY (dom_loc) REFERENCES [4_FLIAS_AFECTADAS].Localidad(loc_id);
 
 
 -- Agregar FK en AlmacenXProductos que referencia a Producto
-ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProductos
-ADD CONSTRAINT FK_Producto FOREIGN KEY (axp_prod_id) 
+ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProducto
+ADD CONSTRAINT FK_Producto FOREIGN KEY (axp_prod) 
     REFERENCES [4_FLIAS_AFECTADAS].Producto (prod_id);
 
 
 -- Agregar FK en AlmacenXProductos que referencia a Almacen
-ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProductos
-ADD CONSTRAINT FK_Almacen FOREIGN KEY (axp_almacen_id) 
-    REFERENCES [4_FLIAS_AFECTADAS].Almacen (almacen_id);
+ALTER TABLE [4_FLIAS_AFECTADAS].AlmacenXProducto
+ADD CONSTRAINT FK_Almacen FOREIGN KEY (axp_alm) 
+    REFERENCES [4_FLIAS_AFECTADAS].Almacen (alm_id);
 GO
