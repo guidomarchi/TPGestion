@@ -13,6 +13,12 @@ IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Almacen_publicacion', 'F') IS NOT NULL ALTE
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_vendedor_publicacion', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Publicacion DROP CONSTRAINT FK_vendedor_publicacion; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Factura', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Factura DROP CONSTRAINT FK_Detalle_Factura; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Publicacion', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Factura DROP CONSTRAINT FK_Detalle_Publicacion; 
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Venta', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Venta DROP CONSTRAINT FK_Detalle_Venta; 
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Venta_Publicacion', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Venta DROP CONSTRAINT FK_Venta_Publicacion; 
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Pago_Venta', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Pago DROP CONSTRAINT FK_Pago_Venta; 
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Pago', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago DROP CONSTRAINT FK_Detalle_Pago; 
+IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Pago_medio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago DROP CONSTRAINT FK_Pago_medio; 
+
 
 -- Eliminar tablas existentes si ya existen
 IF OBJECT_ID('4_FILAS_AFECTADAS.Factura', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Factura;
@@ -34,6 +40,9 @@ IF OBJECT_ID('4_FILAS_AFECTADAS.TipoEnvio', 'U') IS NOT NULL DROP TABLE [4_FILAS
 IF OBJECT_ID('4_FILAS_AFECTADAS.AlmacenXProducto', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].AlmacenXProducto;
 IF OBJECT_ID('4_FILAS_AFECTADAS.Publicacion', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Publicacion;
 IF OBJECT_ID('4_FILAS_AFECTADAS.Detalle_Factura', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Detalle_Factura;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Detalle_Venta', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Detalle_Venta;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Pago;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Detalle_Pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Detalle_Pago;
 
 
 -- Eliminar esquema si ya existe
@@ -207,7 +216,33 @@ Create Table [4_FILAS_AFECTADAS].Detalle_Factura(
 )
 GO
 
+Create table [4_FILAS_AFECTADAS].Detalle_Venta(
+	det_ven_id int identity(1,1) primary key,
+	det_ven_cant decimal(18,0),
+	det_ven_precio decimal(18,2),
+	det_ven_subtotal decimal(18,2),
+	det_ven_publ_id int,
+	det_ven_nro decimal(18,0)
+)
+GO
 
+Create table [4_FILAS_AFECTADAS].Pago(
+	pago_id int identity(1,1) primary key,
+	pago_importe decimal(18,2),
+	pago_fecha date,
+	pago_venta_nro decimal(18,0)
+)
+GO
+
+create table [4_FILAS_AFECTADAS].Detalle_Pago(
+	det_pago_id int identity(1,1) primary key,
+	det_pago_nro_tarjeta nvarchar(50),
+	det_pago_venc_tarjeta date,
+	det_pago_cant_cuotas decimal(18,0),
+	det_pago_medio_id int,
+	det_pago_pago_id int
+)
+GO
 --------------------------------------------------------------/PROCEDURES/------------------------------------------------------------
 CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MODELO
 AS
@@ -623,6 +658,39 @@ and PUBLICACION_CODIGO is not null;
 END
 GO
 
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_VENTA
+AS
+BEGIN
+PRINT 'Tabla Detalle_Venta'
+insert into [4_FILAS_AFECTADAS].Detalle_Venta(det_ven_cant, det_ven_precio, det_ven_subtotal, det_ven_publ_id, det_ven_nro )
+SELECT VENTA_DET_CANT, VENTA_DET_PRECIO, VENTA_DET_SUB_TOTAL, PUBLICACION_CODIGO,VENTA_CODIGO FROM GD2C2024.gd_esquema.Maestra m
+WHERE VENTA_DET_CANT IS NOT NULL;
+END
+GO
+
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PAGO
+AS
+BEGIN
+PRINT 'Tabla Pago'
+insert into [4_FILAS_AFECTADAS].Pago(pago_importe, pago_fecha, pago_venta_nro)
+SELECT PAGO_IMPORTE, PAGO_FECHA, VENTA_CODIGO FROM GD2C2024.gd_esquema.Maestra m
+WHERE PAGO_IMPORTE is not null;
+END
+GO
+
+
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_PAGO
+AS
+BEGIN
+PRINT 'Tabla detalle_Pago'
+insert into [4_FILAS_AFECTADAS].Detalle_Pago(det_pago_nro_tarjeta, det_pago_venc_tarjeta, det_pago_medio_id, det_pago_pago_id, det_pago_cant_cuotas)
+SELECT distinct PAGO_NRO_TARJETA, PAGO_FECHA_VENC_TARJETA, mp.mp_id, p.pago_id, PAGO_CANT_CUOTAS FROM GD2C2024.gd_esquema.Maestra m
+join [4_FILAS_AFECTADAS].MedioDePago mp on mp.mp_tipo = PAGO_TIPO_MEDIO_PAGO and mp.mp_nombre = m.PAGO_MEDIO_PAGO
+join [4_FILAS_AFECTADAS].pago p on p.pago_importe = m.PAGO_IMPORTE and p.pago_fecha = m.PAGO_FECHA and p.pago_venta_nro = m.VENTA_CODIGO;
+END
+GO
+
+
 ---------------------------------------------------------/EJECUTAR PROCEDURES/--------------------------------------------------------
 BEGIN TRANSACTION
 	EXEC [4_FILAS_AFECTADAS].CARGAR_MODELO
@@ -644,6 +712,9 @@ BEGIN TRANSACTION
 	EXEC [4_FILAS_AFECTADAS].CARGAR_ALMACENXPRODUCTO
 	EXEC [4_FILAS_AFECTADAS].CARGAR_PUBLICACION
 	EXEC [4_FILAS_AFECTADAS].CARGAR_DETALLE_FACTURA
+	EXEC [4_FILAS_AFECTADAS].CARGAR_DETALLE_VENTA
+	EXEC [4_FILAS_AFECTADAS].CARGAR_PAGO
+	EXEC [4_FILAS_AFECTADAS].CARGAR_DETALLE_PAGO
 COMMIT TRANSACTION
 ------------------------------------------------------------/DROPS PROCEDURES/--------------------------------------------------------
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MODELO
@@ -665,6 +736,9 @@ COMMIT TRANSACTION
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ALMACENXPRODUCTO
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PUBLICACION
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_FACTURA
+	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_VENTA
+	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PAGO
+	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_PAGO
 
 
 ----------------------------------------------------------------/FKS/-----------------------------------------------------------------
@@ -730,4 +804,34 @@ GO
 ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Factura
 ADD CONSTRAINT FK_Detalle_Publicacion FOREIGN KEY (det_fac_publ) 
     REFERENCES [4_FILAS_AFECTADAS].Publicacion (publ_codigo);
+GO
+
+-- Agregar FK en Detalle_Venta que referencia a Publicacion
+ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Venta
+ADD CONSTRAINT FK_Venta_Publicacion FOREIGN KEY (det_ven_publ_id) 
+    REFERENCES [4_FILAS_AFECTADAS].Publicacion (publ_codigo);
+GO
+
+-- Agregar FK en Detalle_Venta que referencia a Venta
+ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Venta
+ADD CONSTRAINT FK_Detalle_Venta FOREIGN KEY (det_ven_nro) 
+    REFERENCES [4_FILAS_AFECTADAS].Venta (ven_codigo);
+GO
+
+-- Agregar FK en Pago que referencia a Venta
+ALTER TABLE [4_FILAS_AFECTADAS].Pago
+ADD CONSTRAINT FK_Pago_Venta FOREIGN KEY (pago_venta_nro) 
+    REFERENCES [4_FILAS_AFECTADAS].Venta (ven_codigo);
+GO
+
+-- Agregar FK en Detalle_Pago que referencia a Medio_pago
+ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago
+ADD CONSTRAINT FK_Pago_medio FOREIGN KEY (det_pago_medio_id) 
+    REFERENCES [4_FILAS_AFECTADAS].MedioDePago (mp_id);
+GO
+
+-- Agregar FK en Detalle_Pago que referencia a Pago
+ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago
+ADD CONSTRAINT FK_Detalle_Pago FOREIGN KEY (det_pago_pago_id) 
+    REFERENCES [4_FILAS_AFECTADAS].Pago (pago_id);
 GO
