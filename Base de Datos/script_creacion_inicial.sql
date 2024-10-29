@@ -254,6 +254,19 @@ create table [4_FILAS_AFECTADAS].UsuarioXDomicilio(
 );
 GO
 
+Create Table [4_FILAS_AFECTADAS].Envio(
+	envio_id INT IDENTITY(1,1) PRIMARY KEY,
+	envio_fecha_programada DATE,
+	envio_hora_inicio DECIMAL(18,0),
+	envio_hora_fin_inicio DECIMAL(18,0),
+	envio_fecha_entrega DATETIME,
+	envio_costo DECIMAL(18,2),
+	envio_tipo NVARCHAR(50),
+	envio_domicilio_id INT,
+	envio_venta_id INT
+)
+GO
+
 --------------------------------------------------------------/PROCEDURES/------------------------------------------------------------
 CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_MODELO
 AS
@@ -721,6 +734,38 @@ where usu_id is not null and dom_id is not null
 END
 GO
 
+CREATE PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ENVIO
+AS
+BEGIN
+print 'Tabla Envio'
+insert into [4_FILAS_AFECTADAS].Envio(envio_fecha_programada, envio_hora_inicio, envio_hora_fin_inicio, envio_fecha_entrega, envio_costo, envio_tipo, envio_domicilio_id, envio_venta_id)
+select distinct
+	m.ENVIO_FECHA_PROGAMADA,
+	m.ENVIO_HORA_INICIO,
+	m.ENVIO_HORA_FIN_INICIO,
+	m.ENVIO_FECHA_ENTREGA,
+	m.ENVIO_COSTO,
+	tp.te_id,
+	d.dom_id,
+	v.ven_codigo
+from GD2C2024.gd_esquema.Maestra m
+	join [4_FILAS_AFECTADAS].Domicilio d on m.CLI_USUARIO_DOMICILIO_CALLE = d.dom_calle and m.CLI_USUARIO_DOMICILIO_NRO_CALLE = d.dom_no_calle and m.CLI_USUARIO_DOMICILIO_PISO = d.dom_piso and m.CLI_USUARIO_DOMICILIO_DEPTO = d.dom_depto and m.CLI_USUARIO_DOMICILIO_CP = d.dom_cp
+	join [4_FILAS_AFECTADAS].Localidad l on l.loc_id = d.dom_loc and l.loc_nombre = m.CLI_USUARIO_DOMICILIO_LOCALIDAD
+	join [4_FILAS_AFECTADAS].Provincia p on p.prov_id = l.loc_prov and p.prov_nombre = m.CLI_USUARIO_DOMICILIO_PROVINCIA
+	join [4_FILAS_AFECTADAS].Venta v on v.ven_codigo = VENTA_CODIGO
+	join [4_FILAS_AFECTADAS].TipoEnvio tp on tp.te_tipo = m.ENVIO_TIPO
+where ENVIO_FECHA_PROGAMADA is not null and
+	  ENVIO_HORA_INICIO is not null and
+	  ENVIO_HORA_FIN_INICIO is not null and
+	  ENVIO_FECHA_ENTREGA is not null and
+	  ENVIO_COSTO is not null and
+	  ENVIO_TIPO is not null and
+	  dom_id is not null and
+	  ven_codigo is not null;
+END
+GO
+
+
 
 ---------------------------------------------------------/EJECUTAR PROCEDURES/--------------------------------------------------------
 BEGIN TRANSACTION
@@ -747,6 +792,7 @@ BEGIN TRANSACTION
 	EXEC [4_FILAS_AFECTADAS].CARGAR_PAGO
 	EXEC [4_FILAS_AFECTADAS].CARGAR_DETALLE_PAGO
 	EXEC [4_FILAS_AFECTADAS].CARGAR_USUARIOXDOMICILIO
+	EXEC [4_FILAS_AFECTADAS].CARGAR_ENVIO
 COMMIT TRANSACTION
 
 ------------------------------------------------------------/DROPS PROCEDURES/--------------------------------------------------------
@@ -773,6 +819,7 @@ COMMIT TRANSACTION
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_PAGO
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_DETALLE_PAGO
 	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_USUARIOXDOMICILIO
+	DROP PROCEDURE [4_FILAS_AFECTADAS].CARGAR_ENVIO
 
 ----------------------------------------------------------------/FKS/-----------------------------------------------------------------
 
@@ -880,3 +927,24 @@ ALTER TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio
 ADD CONSTRAINT FK_UsuarioXDomicilio_Domicilio FOREIGN KEY (dom_id) 
 	REFERENCES [4_FILAS_AFECTADAS].Domicilio (dom_id);
 GO
+
+-- Agregar FK en Envio que referencia a Tipo_Envio
+ALTER TABLE [4_FILAS_AFECTADAS].Envio
+ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_tipo)
+	REFERENCES [4_FILAS_AFECTADAS].TipoEnvio(tipo_envio_id);
+GO
+
+-- Agregar FK en Envio que referencia a Domicilio
+ALTER TABLE [4_FILAS_AFECTADAS].Envio
+ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_domicilio_id)
+	REFERENCES [4_FILAS_AFECTADAS].Domicilio(dom_id);
+GO
+
+-- Agregar FK en Envio que referencia a Venta
+ALTER TABLE [4_FILAS_AFECTADAS].Envio
+ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_venta_id)
+	REFERENCES [4_FILAS_AFECTADAS].Venta(ven_codigo);
+GO
+
+
+
