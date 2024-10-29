@@ -20,6 +20,12 @@ IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Pago', 'F') IS NOT NULL ALTER TABLE
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Pago_medio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago DROP CONSTRAINT FK_Pago_medio; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_UsuarioXDomicilio_Usuario', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio DROP CONSTRAINT FK_UsuarioXDomicilio_Usuario;
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_UsuarioXDomicilio_Domicilio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio DROP CONSTRAINT FK_UsuarioXDomicilio_Domicilio;
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_TipoEnvio, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_TipoEnvio
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Domicilio, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Domicilio
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Venta, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Venta
+
+
+
 
 
 -- Eliminar tablas existentes si ya existen
@@ -46,6 +52,7 @@ IF OBJECT_ID('4_FILAS_AFECTADAS.Detalle_Venta', 'U') IS NOT NULL DROP TABLE [4_F
 IF OBJECT_ID('4_FILAS_AFECTADAS.Pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Pago;
 IF OBJECT_ID('4_FILAS_AFECTADAS.Detalle_Pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Detalle_Pago;
 IF OBJECT_ID('4_FILAS_AFECTADAS.UsuarioXDomicilio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.Envio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].Envio;
 
 
 -- Eliminar esquema si ya existe
@@ -936,15 +943,12 @@ GO
 
 -- Agregar FK en Envio que referencia a Domicilio
 ALTER TABLE [4_FILAS_AFECTADAS].Envio
-ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_domicilio_id)
+ADD CONSTRAINT Fk_Envio_Domicilio FOREIGN KEY (envio_domicilio_id)
 	REFERENCES [4_FILAS_AFECTADAS].Domicilio(dom_id);
 GO
 
 -- Agregar FK en Envio que referencia a Venta
 ALTER TABLE [4_FILAS_AFECTADAS].Envio
-ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_venta_id)
+ADD CONSTRAINT Fk_Envio_Venta FOREIGN KEY (envio_venta_id)
 	REFERENCES [4_FILAS_AFECTADAS].Venta(ven_codigo);
 GO
-
-
-
