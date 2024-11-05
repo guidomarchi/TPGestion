@@ -17,12 +17,12 @@ IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Venta', 'F') IS NOT NULL ALTER TABL
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Venta_Publicacion', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Venta DROP CONSTRAINT FK_Venta_Publicacion; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Pago_Venta', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Pago DROP CONSTRAINT FK_Pago_Venta; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Detalle_Pago', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago DROP CONSTRAINT FK_Detalle_Pago; 
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Domicilio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Domicilio;
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_Pago_medio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Detalle_Pago DROP CONSTRAINT FK_Pago_medio; 
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_UsuarioXDomicilio_Usuario', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio DROP CONSTRAINT FK_UsuarioXDomicilio_Usuario;
 IF OBJECT_ID('[4_FILAS_AFECTADAS].FK_UsuarioXDomicilio_Domicilio', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].UsuarioXDomicilio DROP CONSTRAINT FK_UsuarioXDomicilio_Domicilio;
-IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_TipoEnvio, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_TipoEnvio
-IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Domicilio, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Domicilio
-IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Venta, F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Venta
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_TipoEnvio','F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_TipoEnvio;
+IF OBJECT_ID('4_FILAS_AFECTADAS].Fk_Envio_Venta', 'F') IS NOT NULL ALTER TABLE [4_FILAS_AFECTADAS].Envio DROP CONSTRAINT Fk_Envio_Venta;
 
 
 
@@ -268,9 +268,9 @@ Create Table [4_FILAS_AFECTADAS].Envio(
 	envio_hora_fin_inicio DECIMAL(18,0),
 	envio_fecha_entrega DATETIME,
 	envio_costo DECIMAL(18,2),
-	envio_tipo NVARCHAR(50),
+	envio_tipo int,
 	envio_domicilio_id INT,
-	envio_venta_id INT
+	envio_venta_id decimal(18,0)
 )
 GO
 
@@ -768,7 +768,7 @@ where ENVIO_FECHA_PROGAMADA is not null and
 	  ENVIO_COSTO is not null and
 	  ENVIO_TIPO is not null and
 	  dom_id is not null and
-	  ven_codigo is not null;
+	  ven_codigo is not null;
 END
 GO
 
@@ -938,7 +938,7 @@ GO
 -- Agregar FK en Envio que referencia a Tipo_Envio
 ALTER TABLE [4_FILAS_AFECTADAS].Envio
 ADD CONSTRAINT Fk_Envio_TipoEnvio FOREIGN KEY (envio_tipo)
-	REFERENCES [4_FILAS_AFECTADAS].TipoEnvio(tipo_envio_id);
+	REFERENCES [4_FILAS_AFECTADAS].TipoEnvio(te_id);
 GO
 
 -- Agregar FK en Envio que referencia a Domicilio
