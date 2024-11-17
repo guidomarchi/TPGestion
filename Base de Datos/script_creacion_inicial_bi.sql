@@ -72,7 +72,7 @@ create table [4_FILAS_AFECTADAS].BI_dim_turnos(
 );
 
 PRINT 'tabla BI_dim_turnos'
-insert into [4_FILAS_AFECTADAS].BI_dim_turnos(hora_inicio,hora_final)
+insert into [4_FILAS_AFECTADAS].BI_dim_turnos(hora_inicio,hora_final,hora_inicio_time,hora_final_time)
 values(8,12,'08:00:00','12:00:00'),(12,16,'12:00:00','16:00:00'),(16,20,'16:00:00','20:00:00')
 
 CREATE TABLE [4_FILAS_AFECTADAS].BI_dim_medio_pago(
@@ -151,67 +151,64 @@ group by ub.ubi_id,
 	t.tiempo_id
 ;
 
-create table [4_FILAS_AFECTADAS].BI_envio(
-	envio_fecha_programada DATE,
-	envio_hora_inicio DECIMAL(18,0),
-	envio_hora_fin_inicio DECIMAL(18,0),
-	envio_fecha_entrega DATETIME,
+CREATE TABLE [4_FILAS_AFECTADAS].BI_envio (
     envio_tiempo int foreign key references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
-	envio_costo DECIMAL(18,2),
 	envio_tipo int foreign key references  [4_FILAS_AFECTADAS].BI_dim_tipo_envio(te_id),
 	envio_ubi_alm INT foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
-    envio_ubi_clie INT foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id)
+    envio_ubi_clie INT foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
+	total_envios INT,
+    total_envios_cumplidos INT,
+    costo_total_envios DECIMAL(18, 2),
+    PRIMARY KEY (envio_tiempo, envio_tipo, envio_ubi_alm)
 );
 
-print 'tabla BI_envio'
-insert into [4_FILAS_AFECTADAS].BI_envio(
-    envio_fecha_programada,envio_hora_inicio,
-    envio_hora_fin_inicio,envio_fecha_entrega,
-    envio_tiempo,envio_costo,envio_tipo,envio_ubi_alm,envio_ubi_clie)
-select
-    e.envio_fecha_programada,
-    e.envio_hora_inicio,
-    e.envio_hora_fin_inicio,
-    e.envio_fecha_entrega,
+PRINT 'tabla BI_envio'
+INSERT INTO [4_FILAS_AFECTADAS].BI_envio (
+    envio_tiempo, envio_tipo, envio_ubi_alm, envio_ubi_clie, total_envios, total_envios_cumplidos, costo_total_envios
+)
+SELECT
     t.tiempo_id,
-    e.envio_costo,
     te.te_id,
     ub.ubi_id,
-    ub2.ubi_id
-from [4_FILAS_AFECTADAS].Envio e
-join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.mes = month(e.envio_fecha_entrega) and t.anio = year(e.envio_fecha_entrega)
-join [4_FILAS_AFECTADAS].BI_dim_tipo_envio te on te.te_id = e.envio_tipo
-join [4_FILAS_AFECTADAS].Venta v on v.ven_codigo = e.envio_venta_id
-join [4_FILAS_AFECTADAS].Detalle_Venta dv on v.ven_codigo = dv.det_ven_nro
-join [4_FILAS_AFECTADAS].Publicacion pu on pu.publ_codigo = dv.det_ven_publ_id
-join [4_FILAS_AFECTADAS].AlmacenXProducto axp on pu.publ_alm_prod = axp.axp_id
-join [4_FILAS_AFECTADAS].Almacen a on axp.axp_alm = a.alm_id
-join [4_FILAS_AFECTADAS].Domicilio d on d.dom_id = a.alm_dom
-join [4_FILAS_AFECTADAS].Localidad l on l.loc_id = d.dom_loc
-join [4_FILAS_AFECTADAS].Provincia p on p.prov_id = l.loc_prov
-join [4_FILAS_AFECTADAS].BI_dim_ubicacion ub on ub.ubi_localidad = l.loc_nombre and ub.ubi_provincia = p.prov_nombre
-
-join [4_FILAS_AFECTADAS].Domicilio d2 on d2.dom_id = e.envio_domicilio_id
-join [4_FILAS_AFECTADAS].Localidad l2 on l2.loc_id = d2.dom_loc
-join [4_FILAS_AFECTADAS].Provincia p2 on p2.prov_id = l2.loc_prov
-join [4_FILAS_AFECTADAS].BI_dim_ubicacion ub2 on ub2.ubi_localidad = l2.loc_nombre and ub2.ubi_provincia = p2.prov_nombre
+    ub2.ubi_id,
+    COUNT(e.envio_costo) AS total_envios,
+    SUM(CASE WHEN cast(e.envio_fecha_entrega as date) = e.envio_fecha_programada and	
+		cast(e.envio_fecha_entrega as time) between tu.hora_inicio_time and tu.hora_final_time
+		THEN 1 ELSE 0 END) AS total_envios_cumplidos,
+    SUM(e.envio_costo) AS costo_total_envios
+FROM [4_FILAS_AFECTADAS].Envio e
+JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON t.mes = MONTH(e.envio_fecha_entrega) AND t.anio = YEAR(e.envio_fecha_entrega)
+JOIN [4_FILAS_AFECTADAS].BI_dim_tipo_envio te ON te.te_id = e.envio_tipo
+JOIN [4_FILAS_AFECTADAS].Domicilio d ON d.dom_id = e.envio_domicilio_id
+JOIN [4_FILAS_AFECTADAS].Localidad l ON l.loc_id = d.dom_loc
+JOIN [4_FILAS_AFECTADAS].Provincia p ON p.prov_id = l.loc_prov
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion ub ON ub.ubi_localidad = l.loc_nombre AND ub.ubi_provincia = p.prov_nombre
+JOIN [4_FILAS_AFECTADAS].Domicilio d2 ON d2.dom_id = e.envio_domicilio_id
+JOIN [4_FILAS_AFECTADAS].Localidad l2 ON l2.loc_id = d2.dom_loc
+JOIN [4_FILAS_AFECTADAS].Provincia p2 ON p2.prov_id = l2.loc_prov
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion ub2 ON ub2.ubi_localidad = l2.loc_nombre AND ub2.ubi_provincia = p2.prov_nombre
+join [4_FILAS_AFECTADAS].BI_dim_turnos tu on tu.hora_inicio = e.envio_hora_inicio and tu.hora_final = e.envio_hora_fin_inicio
+GROUP BY t.tiempo_id, te.te_id, ub.ubi_id, ub2.ubi_id;
 
 
 
 --------------------------Vistas-------------------
 print 'vista 7'
-select
-	cast(count(e.envio_costo)as float)/cast(count(e2.envio_costo) as float) * 100
-from [4_FILAS_AFECTADAS].BI_envio e
-join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on e.envio_ubi_alm = u.ubi_id
-join [4_FILAS_AFECTADAS].BI_envio e2 on e.envio_tiempo = e2.envio_tiempo and e.envio_ubi_alm = e2.envio_ubi_alm
-join [4_FILAS_AFECTADAS].BI_dim_turnos t on t.hora_inicio = e.envio_hora_inicio and t.hora_final = e.envio_hora_fin_inicio
-where cast(e.envio_fecha_entrega as date) = e.envio_fecha_programada and 
-	cast(e.envio_fecha_entrega as time) between t.hora_inicio_time and t.hora_final_time
+SELECT
+    u.ubi_provincia,
+    t.anio,
+    t.mes,
+    (CAST(SUM(eb.total_envios_cumplidos) AS FLOAT) / CAST(SUM(eb.total_envios) AS FLOAT)) * 100 AS porcentaje_cumplimiento
+FROM [4_FILAS_AFECTADAS].BI_envio_agrupado eb
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_alm = u.ubi_id
+JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON eb.envio_tiempo = t.tiempo_id
+GROUP BY u.ubi_provincia, t.anio, t.mes;
 
 print 'vista 8'
-select top 5
-	u.ubi_localidad
-from [4_FILAS_AFECTADAS].BI_envio e
-join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on e.envio_ubi_alm = u.ubi_id
-order by e.envio_costo desc
+SELECT TOP 5
+    u.ubi_localidad,
+    SUM(eb.costo_total_envios)/sum(eb.total_envios) AS costo_total_envios
+FROM [4_FILAS_AFECTADAS].BI_envio_agrupado eb
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_clie = u.ubi_id
+GROUP BY u.ubi_localidad
+ORDER BY costo_total_envios DESC;
