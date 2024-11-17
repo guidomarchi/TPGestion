@@ -199,16 +199,15 @@ SELECT
     t.anio,
     t.mes,
     (CAST(SUM(eb.total_envios_cumplidos) AS FLOAT) / CAST(SUM(eb.total_envios) AS FLOAT)) * 100 AS porcentaje_cumplimiento
-FROM [4_FILAS_AFECTADAS].BI_envio_agrupado eb
+FROM [4_FILAS_AFECTADAS].BI_envio eb
 JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_alm = u.ubi_id
 JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON eb.envio_tiempo = t.tiempo_id
 GROUP BY u.ubi_provincia, t.anio, t.mes;
 
 print 'vista 8'
 SELECT TOP 5
-    u.ubi_localidad,
-    SUM(eb.costo_total_envios)/sum(eb.total_envios) AS costo_total_envios
-FROM [4_FILAS_AFECTADAS].BI_envio_agrupado eb
+    u.ubi_localidad
+FROM [4_FILAS_AFECTADAS].BI_envio eb
 JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_clie = u.ubi_id
 GROUP BY u.ubi_localidad
-ORDER BY costo_total_envios DESC;
+ORDER BY SUM(eb.costo_total_envios)/sum(eb.total_envios) DESC;
