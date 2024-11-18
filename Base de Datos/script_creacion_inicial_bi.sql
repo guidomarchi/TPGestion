@@ -190,6 +190,44 @@ JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion ub2 ON ub2.ubi_localidad = l2.loc_nomb
 join [4_FILAS_AFECTADAS].BI_dim_turnos tu on tu.hora_inicio = e.envio_hora_inicio and tu.hora_final = e.envio_hora_fin_inicio
 GROUP BY t.tiempo_id, te.te_id, ub.ubi_id, ub2.ubi_id;
 
+create table [4_FILAS_AFECTADAS].BI_PAGO(
+	pago_tiempo int foreign key references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
+	pago_medio_pago nvarchar(50),
+	pago_tipo_medio_pago nvarchar(50),
+	pago_importe decimal(18,2),
+	pago_cuotas decimal(18,0),
+	pago_ubi int foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
+	CONSTRAINT FK_Pago_MedioPago 
+       FOREIGN KEY (pago_tipo_medio_pago, pago_medio_pago)
+       REFERENCES [4_FILAS_AFECTADAS].BI_dim_medio_pago(medio_pago_tipo, medio_pago)
+);
+
+print 'tabla BI_pago'
+insert into [4_FILAS_AFECTADAS].BI_PAGO(pago_tiempo, 
+										pago_medio_pago, 
+										pago_tipo_medio_pago, 
+										pago_importe, 
+										pago_cuotas, 
+										pago_ubi)
+select
+	t.tiempo_id,
+	mp.mp_nombre,
+	mp.mp_tipo,
+	p.pago_importe,
+	dp.det_pago_cant_cuotas,
+	ubi.ubi_id
+from [4_FILAS_AFECTADAS].MedioDePago mp
+join [4_FILAS_AFECTADAS].Detalle_Pago dp on mp.mp_id = dp.det_pago_medio_id
+join [4_FILAS_AFECTADAS].Pago p on dp.det_pago_pago_id = p.pago_id
+join [4_FILAS_AFECTADAS].Venta v on p.pago_venta_nro = v.ven_codigo
+join [4_FILAS_AFECTADAS].Cliente c on v.ven_cli_id = c.cli_id
+join [4_FILAS_AFECTADAS].Usuario u on c.cli_usu_id = u.usu_id
+join [4_FILAS_AFECTADAS].UsuarioXDomicilio ud on u.usu_id = ud.usu_id
+join [4_FILAS_AFECTADAS].Domicilio d on ud.dom_id = d.dom_id
+join [4_FILAS_AFECTADAS].Localidad l on d.dom_loc = l.loc_id
+join [4_FILAS_AFECTADAS].Provincia pro on l.loc_prov = pro.prov_id
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion ubi on l.loc_nombre = ubi.ubi_localidad and pro.prov_nombre = ubi_provincia
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.anio = YEAR(p.pago_fecha) and t.mes = MONTH(p.pago_fecha)
 
 
 --------------------------Vistas-------------------
