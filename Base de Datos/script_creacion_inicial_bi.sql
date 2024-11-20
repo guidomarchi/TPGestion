@@ -76,17 +76,18 @@ insert into [4_FILAS_AFECTADAS].BI_dim_turnos(hora_inicio,hora_final,hora_inicio
 values(8,12,'08:00:00','12:00:00'),(12,16,'12:00:00','16:00:00'),(16,20,'16:00:00','20:00:00')
 
 CREATE TABLE [4_FILAS_AFECTADAS].BI_dim_medio_pago(
-    medio_pago_tipo NVARCHAR(50),
-    medio_pago NVARCHAR(50),
-	PRIMARY KEY (medio_pago_tipo,medio_pago)
+    mp_id int primary key,
+	mp_tipo nvarchar(50),
+	mp_nombre nvarchar(50)
 );
 GO
 
 print 'tabla BI_dim_medio_pago'
-insert into [4_FILAS_AFECTADAS].BI_dim_medio_pago(medio_pago_tipo,medio_pago)
+insert into [4_FILAS_AFECTADAS].BI_dim_medio_pago(mp_id,mp_tipo,mp_nombre)
 select
-	mp.mp_nombre,
-	mp.mp_tipo
+    mp.mp_id,
+    mp.mp_tipo,
+	mp.mp_nombre
 from [4_FILAS_AFECTADAS].MedioDePago mp;
 
 create table [4_FILAS_AFECTADAS].BI_dim_subrubro(
@@ -190,47 +191,73 @@ JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion ub2 ON ub2.ubi_localidad = l2.loc_nomb
 join [4_FILAS_AFECTADAS].BI_dim_turnos tu on tu.hora_inicio = e.envio_hora_inicio and tu.hora_final = e.envio_hora_fin_inicio
 GROUP BY t.tiempo_id, te.te_id, ub.ubi_id, ub2.ubi_id;
 
-create table [4_FILAS_AFECTADAS].BI_PAGO(
+
+
+create table [4_FILAS_AFECTADAS].BI_pago(
 	pago_tiempo int foreign key references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
-	pago_medio_pago nvarchar(50),
-	pago_tipo_medio_pago nvarchar(50),
-	pago_importe decimal(18,2),
-	pago_cuotas decimal(18,0),
+	pago_medio_pago int FOREIGN KEY REFERENCES [4_FILAS_AFECTADAS].BI_dim_medio_pago(mp_id),
+	pago_importe_cuotas decimal(18,2),
+	pago_importe_total decimal(18,2),
 	pago_ubi int foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
-	CONSTRAINT FK_Pago_MedioPago 
-       FOREIGN KEY (pago_tipo_medio_pago, pago_medio_pago)
-       REFERENCES [4_FILAS_AFECTADAS].BI_dim_medio_pago(medio_pago_tipo, medio_pago)
 );
 
 print 'tabla BI_pago'
-insert into [4_FILAS_AFECTADAS].BI_PAGO(pago_tiempo, 
-										pago_medio_pago, 
-										pago_tipo_medio_pago, 
-										pago_importe, 
-										pago_cuotas, 
+insert into [4_FILAS_AFECTADAS].BI_pago(pago_tiempo, 
+										pago_medio_pago,  
+										pago_importe_cuotas, 
+										pago_importe_total, 
 										pago_ubi)
-select
-	t.tiempo_id,
-	mp.mp_nombre,
-	mp.mp_tipo,
-	p.pago_importe,
-	dp.det_pago_cant_cuotas,
-	ubi.ubi_id
-from [4_FILAS_AFECTADAS].MedioDePago mp
-join [4_FILAS_AFECTADAS].Detalle_Pago dp on mp.mp_id = dp.det_pago_medio_id
-join [4_FILAS_AFECTADAS].Pago p on dp.det_pago_pago_id = p.pago_id
-join [4_FILAS_AFECTADAS].Venta v on p.pago_venta_nro = v.ven_codigo
-join [4_FILAS_AFECTADAS].Cliente c on v.ven_cli_id = c.cli_id
-join [4_FILAS_AFECTADAS].Usuario u on c.cli_usu_id = u.usu_id
-join [4_FILAS_AFECTADAS].UsuarioXDomicilio ud on u.usu_id = ud.usu_id
-join [4_FILAS_AFECTADAS].Domicilio d on ud.dom_id = d.dom_id
-join [4_FILAS_AFECTADAS].Localidad l on d.dom_loc = l.loc_id
-join [4_FILAS_AFECTADAS].Provincia pro on l.loc_prov = pro.prov_id
-join [4_FILAS_AFECTADAS].BI_dim_ubicacion ubi on l.loc_nombre = ubi.ubi_localidad and pro.prov_nombre = ubi_provincia
-join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.anio = YEAR(p.pago_fecha) and t.mes = MONTH(p.pago_fecha)
+SELECT
+    t.tiempo_id,
+    bimp.mp_id,
+    SUM(
+        CASE
+            WHEN dp.det_pago_cant_cuotas > 1 and mp.mp_tipo != 'Tarjeta Debito' THEN p.pago_importe
+            ELSE 0
+        END
+    ) AS total_con_cuotas,
+    SUM(p.pago_importe) AS total_importe,
+    ubi.ubi_id
+FROM [4_FILAS_AFECTADAS].MedioDePago mp
+join [4_FILAS_AFECTADAS].BI_dim_medio_pago bimp on bimp.mp_id = mp.mp_id
+JOIN [4_FILAS_AFECTADAS].Detalle_Pago dp ON mp.mp_id = dp.det_pago_medio_id
+JOIN [4_FILAS_AFECTADAS].Pago p ON dp.det_pago_pago_id = p.pago_id
+JOIN [4_FILAS_AFECTADAS].Venta v ON p.pago_venta_nro = v.ven_codigo
+join [4_FILAS_AFECTADAS].Envio ev on ev.envio_venta_id = v.ven_codigo
+JOIN [4_FILAS_AFECTADAS].Domicilio d ON ev.envio_domicilio_id = d.dom_id
+JOIN [4_FILAS_AFECTADAS].Localidad l ON d.dom_loc = l.loc_id
+JOIN [4_FILAS_AFECTADAS].Provincia pro ON l.loc_prov = pro.prov_id
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion ubi ON l.loc_nombre = ubi.ubi_localidad AND pro.prov_nombre = ubi.ubi_provincia
+JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON t.anio = YEAR(p.pago_fecha) AND t.mes = MONTH(p.pago_fecha)
+GROUP BY
+    t.tiempo_id,
+    bimp.mp_id,
+    ubi.ubi_id;
 
 
 --------------------------Vistas-------------------
+print '6'
+select top 3
+	u.ubi_localidad,
+	sum(p.pago_importe_cuotas) as importe_en_cuotas,
+	mp.mp_nombre,
+	mp.mp_tipo,
+	t.anio,
+	t.mes
+from [4_FILAS_AFECTADAS].BI_pago p
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on u.ubi_id = p.pago_ubi
+join [4_FILAS_AFECTADAS].BI_dim_medio_pago mp on mp.mp_id = p.pago_medio_pago
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pago_tiempo
+group by
+	u.ubi_localidad,
+	mp.mp_nombre,
+	mp.mp_tipo,
+	t.anio,
+	t.mes
+order by 2 desc
+
+
+
 print 'vista 7'
 SELECT
     u.ubi_provincia,
