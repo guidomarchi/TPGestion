@@ -93,14 +93,15 @@ from [4_FILAS_AFECTADAS].MedioDePago mp;
 create table [4_FILAS_AFECTADAS].BI_dim_subrubro(
     subrubro NVARCHAR(50),
     rubro NVARCHAR(50),
-    primary key (subrubro,rubro)
+    subrubro_id int primary key
 );
 
 print 'tabla BI_dim_subrubro'
-insert into [4_FILAS_AFECTADAS].BI_dim_subrubro(subrubro,rubro)
+insert into [4_FILAS_AFECTADAS].BI_dim_subrubro(subrubro,rubro,subrubro_id)
 select
 	s.subrubro_descripcion,
-	r.rubro_descripcion
+	r.rubro_descripcion,
+	s.subrubro_id
 from [4_FILAS_AFECTADAS].SubRubro s
 join [4_FILAS_AFECTADAS].Rubro r on r.rubro_id = s.subrubro_rubro;
 
@@ -233,6 +234,7 @@ GROUP BY
     t.tiempo_id,
     bimp.mp_id,
     ubi.ubi_id;
+
 
 
 --------------------------Vistas-------------------
