@@ -241,7 +241,6 @@ select top 3
 	u.ubi_localidad,
 	sum(p.pago_importe_cuotas) as importe_en_cuotas,
 	mp.mp_nombre,
-	mp.mp_tipo,
 	t.anio,
 	t.mes
 from [4_FILAS_AFECTADAS].BI_pago p
@@ -254,7 +253,6 @@ group by
 	mp.mp_tipo,
 	t.anio,
 	t.mes
-order by 2 desc
 
 
 
@@ -269,6 +267,7 @@ JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_alm = u.ubi_id
 JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON eb.envio_tiempo = t.tiempo_id
 GROUP BY u.ubi_provincia, t.anio, t.mes;
 
+
 print 'vista 8'
 SELECT TOP 5
     u.ubi_localidad
@@ -276,3 +275,32 @@ FROM [4_FILAS_AFECTADAS].BI_envio eb
 JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_clie = u.ubi_id
 GROUP BY u.ubi_localidad
 ORDER BY SUM(eb.costo_total_envios)/sum(eb.total_envios) DESC;
+
+print 'vista 9'
+select
+	t.mes,
+	t.anio,
+	sum(f.fact_total)/(
+		select sum(f2.fact_total) 
+		from [4_FILAS_AFECTADAS].BI_facturacion f2 
+		JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t2 ON f2.fact_tiempo = t2.tiempo_id
+		where t2.anio = t.anio) * 100 as porcentaje
+from [4_FILAS_AFECTADAS].BI_facturacion f
+JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON f.fact_tiempo = t.tiempo_id
+group by 
+	t.mes,
+	t.anio
+
+print 'vista 10'
+select
+	t.cuatrimestre,
+	t.anio,
+	u.ubi_provincia,
+	sum(f.fact_total) as total_facturado
+from [4_FILAS_AFECTADAS].BI_facturacion f
+JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON f.fact_tiempo = t.tiempo_id
+JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON f.fact_ubi = u.ubi_id
+group by
+	t.cuatrimestre,
+	t.anio,
+	u.ubi_provincia
