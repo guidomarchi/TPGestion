@@ -324,7 +324,7 @@ group by t.anio,m.mar_desc
 print 'vista 6'
 select top 3
 	u.ubi_localidad,
-	sum(p.pago_importe_total) importe_en_cuotas,
+	sum(case when p.pago_en_cuotas is not null  then p.pago_importe_total else 0 end) as importe_en_cuotas,
 	mp.mp_nombre,
 	t.anio,
 	t.mes
@@ -332,7 +332,6 @@ from [4_FILAS_AFECTADAS].BI_pago p
 join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on u.ubi_id = p.pago_ubi
 join [4_FILAS_AFECTADAS].BI_dim_medio_pago mp on mp.mp_id = p.pago_medio_pago
 join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pago_tiempo
-where p.pago_en_cuotas is not null
 group by
 	u.ubi_localidad,
 	mp.mp_nombre,
