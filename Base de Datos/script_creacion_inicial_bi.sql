@@ -335,10 +335,9 @@ join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pago_tiempo
 group by
 	u.ubi_localidad,
 	mp.mp_nombre,
-	mp.mp_tipo,
 	t.anio,
 	t.mes
-
+order by 2 desc;
 
 
 print 'vista 7'
