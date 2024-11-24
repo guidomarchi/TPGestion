@@ -1,5 +1,30 @@
 USE [GD2C2024]
 GO
+---------------------------Eliminar tablas -----------------------
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_ventas', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_ventas;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_envio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_envio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_facturacion', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_facturacion;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_pago;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_publicacion', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_publicacion;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_marca', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_marca;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_medio_pago', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_medio_pago;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_rango_etario_clie', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_rango_etario_clie;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_subrubro', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_subrubro;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_tiempo', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_tiempo;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_tipo_envio', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_tipo_envio;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_turnos', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_turnos;
+IF OBJECT_ID('4_FILAS_AFECTADAS.BI_dim_ubicacion', 'U') IS NOT NULL DROP TABLE [4_FILAS_AFECTADAS].BI_dim_ubicacion;
+
+DROP VIEW [4_FILAS_AFECTADAS].Facturación_por_provincia;
+DROP VIEW [4_FILAS_AFECTADAS].Promedio_de_Stock_Inicial;
+DROP VIEW [4_FILAS_AFECTADAS].Venta_promedio_mensual;
+DROP VIEW [4_FILAS_AFECTADAS].Rendimiento_de_rubros;
+DROP VIEW [4_FILAS_AFECTADAS].Pago_en_Cuotas;
+DROP VIEW [4_FILAS_AFECTADAS].Porcentaje_de_cumplimiento_de_envíos;
+DROP VIEW [4_FILAS_AFECTADAS].Localidades_que_pagan_mayor_costo_de_envío;
+DROP VIEW [4_FILAS_AFECTADAS].Porcentaje_de_facturación_por_concepto;
+DROP VIEW [4_FILAS_AFECTADAS].Volumen_de_ventas;
+DROP VIEW [4_FILAS_AFECTADAS].Promedio_de_tiempo_de_publicaciones;
 
 
 ---------------------------dimensiones-----------------------------
@@ -64,11 +89,11 @@ INSERT INTO [4_FILAS_AFECTADAS].BI_dim_rango_etario_clie (rango, minimo, maximo)
 values('< 25',0,24),('25 - 35',25,35),('35 - 50',36,50),('> 50',51,150);
 
 create table [4_FILAS_AFECTADAS].BI_dim_turnos(
+	turno_id int identity(1,1) primary key,
 	hora_inicio int,
 	hora_final int,
     hora_inicio_time time,
 	hora_final_time time,
-	primary key (hora_inicio,hora_final) 
 );
 
 PRINT 'tabla BI_dim_turnos'
@@ -292,10 +317,41 @@ group by t.tiempo_id,
 		ds.subrubro_id,
 		dm.mar_id
 
+CREATE TABLE [4_FILAS_AFECTADAS].BI_ventas(
+	venta_ubi int references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
+	venta_tiempo int references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
+	venta_rg_et_clie int references [4_FILAS_AFECTADAS].BI_dim_rango_etario_clie(rango_etario_id),
+	venta_subrubro int references [4_FILAS_AFECTADAS].BI_dim_subrubro(subrubro_id),
+	venta_turno int references [4_FILAS_AFECTADAS].BI_dim_turnos(turno_id),
+	venta_total decimal(18,2),
+	venta_cantidad decimal(18,2)
+	primary key(venta_ubi,venta_tiempo,venta_turno,venta_rg_et_clie,venta_subrubro)
+)
+
+print 'tabla BI_ventas'
+insert into [4_FILAS_AFECTADAS].BI_ventas(venta_ubi, venta_tiempo, venta_rg_et_clie,venta_turno, venta_subrubro,venta_total, venta_cantidad)
+Select du.ubi_id, dt.tiempo_id, re.rango_etario_id,tur.turno_id, ds.subrubro_id, sum(v.ven_total), COUNT(DISTINCT v.ven_codigo) from [4_FILAS_AFECTADAS].Venta v
+join [4_FILAS_AFECTADAS].Detalle_Venta dv on dv.det_ven_nro = v.ven_codigo
+join [4_FILAS_AFECTADAS].Cliente c on v.ven_cli_id = c.cli_id
+join [4_FILAS_AFECTADAS].Envio e on e.envio_venta_id = v.ven_codigo
+join [4_FILAS_AFECTADAS].Publicacion p on dv.det_ven_publ_id = p.publ_codigo
+join [4_FILAS_AFECTADAS].AlmacenXProducto ap on ap.axp_id = p.publ_alm_prod
+join [4_FILAS_AFECTADAS].Almacen a on a.alm_id = ap.axp_alm
+join [4_FILAS_AFECTADAS].Domicilio d on d.dom_id = a.alm_dom
+join [4_FILAS_AFECTADAS].Producto pr on pr.prod_id = ap.axp_prod 
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion du on du.ubi_id = d.dom_loc
+join [4_FILAS_AFECTADAS].BI_dim_tiempo dt on dt.anio = YEAR(v.ven_fecha) and dt.mes = MONTH(v.ven_fecha)
+join [4_FILAS_AFECTADAS].BI_dim_rango_etario_clie re on DATEDIFF(YEAR, c.cli_fecha_nac, GETDATE()) BETWEEN re.minimo and re.maximo
+join [4_FILAS_AFECTADAS].BI_dim_subrubro ds on ds.subrubro_id = pr.prod_subRub
+join [4_FILAS_AFECTADAS].BI_dim_turnos tur on tur.hora_inicio = e.envio_hora_inicio and tur.hora_final = e.envio_hora_fin_inicio
+group by du.ubi_id, dt.tiempo_id, re.rango_etario_id, ds.subrubro_id, tur.turno_id;
+go
 
 --------------------------Vistas-------------------
 
-print 'vista 1'
+-- vista 1
+CREATE VIEW [4_FILAS_AFECTADAS].Promedio_de_tiempo_de_publicaciones
+as
 select
 	sum(p.pub_cant_dias)/sum(p.pub_cant_publicaciones) as promedio_dias,
 	ds.subrubro,
@@ -307,9 +363,12 @@ join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pub_tiempo
 group by ds.subrubro,
 	t.cuatrimestre,
 	t.anio
+go
 
 
-print 'vista 2'
+-- vista 2
+CREATE VIEW [4_FILAS_AFECTADAS].Promedio_de_Stock_Inicial
+as
 select
 	sum(p.pub_stock_total_inicial)/sum(p.pub_cant_publicaciones) as promedio_stock_inicial,
 	t.anio,
@@ -317,11 +376,42 @@ select
 from [4_FILAS_AFECTADAS].BI_publicacion p
 join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pub_tiempo
 join [4_FILAS_AFECTADAS].BI_dim_marca m on m.mar_id = p.pub_marca
-group by t.anio,m.mar_desc
+group by t.anio,m.mar_desc;
+go
 
+--vista 3
+CREATE VIEW [4_FILAS_AFECTADAS].Venta_promedio_mensual
+as
+Select u.ubi_provincia as Provincia, t.anio, t.mes, sum(v.venta_total)/sum(v.venta_cantidad) as 'Promedio_Ventas' from [4_FILAS_AFECTADAS].BI_ventas v
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on v.venta_ubi = u.ubi_id
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on v.venta_tiempo = t.tiempo_id
+group by  u.ubi_provincia, t.anio,  t.mes
+go
 
+-- vista 4
+CREATE VIEW [4_FILAS_AFECTADAS].Rendimiento_de_rubros
+as
+Select top 5 t.anio, t.cuatrimestre, u.ubi_localidad, r.rango, sum(v.venta_total) as total_ventas from [4_FILAS_AFECTADAS].BI_ventas v
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = v.venta_tiempo
+join [4_FILAS_AFECTADAS].BI_dim_rango_etario_clie r on r.rango_etario_id = v.venta_rg_et_clie
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion u on u.ubi_id = v.venta_ubi
+join [4_FILAS_AFECTADAS].BI_dim_subrubro s on s.subrubro_id = v.venta_subrubro
+group by t.anio, t.cuatrimestre, u.ubi_localidad, r.rango
+order by 5 desc
+go
 
-print '6'
+--vista 5
+CREATE VIEW [4_FILAS_AFECTADAS].Volumen_de_ventas
+as
+select tp.anio, tp.mes, cast(t.hora_inicio_time as varchar(10))+ ' - '+ cast(t.hora_final_time as varchar(10)) as rango_horario, sum(v.venta_cantidad) as ventas_registradas from [4_FILAS_AFECTADAS].BI_ventas v
+join [4_FILAS_AFECTADAS].BI_dim_turnos t on v.venta_turno = turno_id
+join [4_FILAS_AFECTADAS].BI_dim_tiempo tp on tp.tiempo_id = v.venta_tiempo
+group by tp.anio, tp.mes, cast(t.hora_inicio_time as varchar(10))+ ' - '+ cast(t.hora_final_time as varchar(10))
+go
+
+--vista 6
+CREATE VIEW [4_FILAS_AFECTADAS].Pago_en_Cuotas
+as
 select top 3
 	u.ubi_localidad,
 	sum(p.pago_importe_cuotas) as importe_en_cuotas,
@@ -338,9 +428,11 @@ group by
 	t.anio,
 	t.mes
 order by 2 desc;
+go
 
-
-print 'vista 7'
+-- vista 7
+CREATE VIEW [4_FILAS_AFECTADAS].Porcentaje_de_cumplimiento_de_envíos
+as
 SELECT
     u.ubi_provincia,
     t.anio,
@@ -350,17 +442,22 @@ FROM [4_FILAS_AFECTADAS].BI_envio eb
 JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_alm = u.ubi_id
 JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON eb.envio_tiempo = t.tiempo_id
 GROUP BY u.ubi_provincia, t.anio, t.mes;
+go
 
-
-print 'vista 8'
+-- vista 8
+CREATE VIEW [4_FILAS_AFECTADAS].Localidades_que_pagan_mayor_costo_de_envío
+as
 SELECT TOP 5
     u.ubi_localidad
 FROM [4_FILAS_AFECTADAS].BI_envio eb
 JOIN [4_FILAS_AFECTADAS].BI_dim_ubicacion u ON eb.envio_ubi_clie = u.ubi_id
 GROUP BY u.ubi_localidad
 ORDER BY SUM(eb.costo_total_envios)/sum(eb.total_envios) DESC;
+go
 
-print 'vista 9'
+-- vista 9
+CREATE VIEW [4_FILAS_AFECTADAS].Porcentaje_de_facturación_por_concepto
+as
 select
 	t.mes,
 	t.anio,
@@ -374,8 +471,11 @@ JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON f.fact_tiempo = t.tiempo_id
 group by 
 	t.mes,
 	t.anio
+go
 
-print 'vista 10'
+-- vista 10
+CREATE VIEW [4_FILAS_AFECTADAS].Facturación_por_provincia
+as
 select
 	t.cuatrimestre,
 	t.anio,
@@ -388,3 +488,4 @@ group by
 	t.cuatrimestre,
 	t.anio,
 	u.ubi_provincia
+go
