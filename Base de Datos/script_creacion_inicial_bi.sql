@@ -86,9 +86,10 @@ print 'tabla BI_dim_medio_pago'
 insert into [4_FILAS_AFECTADAS].BI_dim_medio_pago(mp_id,mp_tipo,mp_nombre)
 select
     mp.mp_id,
-    mp.mp_tipo,
+    t.tmp_tipo,
 	mp.mp_nombre
-from [4_FILAS_AFECTADAS].MedioDePago mp;
+from [4_FILAS_AFECTADAS].MedioDePago mp
+join [4_FILAS_AFECTADAS].TipoMedioDePago t on t.tmp_id = mp.mp_tipo;
 
 create table [4_FILAS_AFECTADAS].BI_dim_subrubro(
     subrubro NVARCHAR(50),
@@ -226,7 +227,7 @@ SELECT
     bimp.mp_id,
     SUM(
         CASE
-            WHEN dp.det_pago_cant_cuotas > 1 and mp.mp_tipo != 'Tarjeta Debito' THEN p.pago_importe
+            WHEN dp.det_pago_cant_cuotas > 1 and mp.mp_tipo = 1 THEN p.pago_importe
             ELSE 0
         END
     ) AS total_con_cuotas,

@@ -100,11 +100,19 @@ CREATE TABLE [4_FILAS_AFECTADAS].Domicilio (
 );
 GO
 
+
+create table [4_FILAS_AFECTADAS].TipoMedioDePago(
+	tmp_id int identity(1,1) primary key,
+	tmp_tipo nvarchar(50)
+);
+GO
+
+
 create table [4_FILAS_AFECTADAS].MedioDePago(
 	mp_id int identity(1,1) primary key,
-	mp_tipo nvarchar(50),
+	mp_tipo int foreign key references [4_FILAS_AFECTADAS].TipoMedioDePago(tmp_id),
 	mp_nombre nvarchar(50)
-)
+);
 GO
 
 
@@ -433,15 +441,24 @@ WHERE m.CLI_USUARIO_DOMICILIO_CALLE IS NOT NULL AND
 ;
 
 
+print 'tabla TipoMedioDePago'
+insert into [4_FILAS_AFECTADAS].TipoMedioDePago(tmp_tipo)
+select distinct
+	m.PAGO_TIPO_MEDIO_PAGO
+from [gd_esquema].[Maestra] m
+where 
+	m.PAGO_TIPO_MEDIO_PAGO is not null ;
+
 print 'tabla MedioDePago'
 insert into [4_FILAS_AFECTADAS].MedioDePago(mp_tipo,mp_nombre)
 select distinct
-	m.PAGO_TIPO_MEDIO_PAGO,
+	t.tmp_id,
 	m.PAGO_MEDIO_PAGO
 from [gd_esquema].[Maestra] m
+join [4_FILAS_AFECTADAS].TipoMedioDePago t on t.tmp_tipo = m.PAGO_TIPO_MEDIO_PAGO
 where 
 	m.PAGO_TIPO_MEDIO_PAGO is not null and
-	m.PAGO_TIPO_MEDIO_PAGO is not null ;
+	m.PAGO_MEDIO_PAGO is not null ;
 
 print 'tabla Producto'
 insert into [4_FILAS_AFECTADAS].Producto(
@@ -566,10 +583,11 @@ WHERE PAGO_IMPORTE is not null;
 
 PRINT 'Tabla detalle_Pago'
 insert into [4_FILAS_AFECTADAS].Detalle_Pago(det_pago_nro_tarjeta, det_pago_venc_tarjeta, det_pago_medio_id, det_pago_pago_id, det_pago_cant_cuotas)
-SELECT distinct PAGO_NRO_TARJETA, PAGO_FECHA_VENC_TARJETA, mp.mp_id, p.pago_id, PAGO_CANT_CUOTAS FROM GD2C2024.gd_esquema.Maestra m
-join [4_FILAS_AFECTADAS].MedioDePago mp on mp.mp_tipo = PAGO_TIPO_MEDIO_PAGO and mp.mp_nombre = m.PAGO_MEDIO_PAGO
+SELECT distinct PAGO_NRO_TARJETA, PAGO_FECHA_VENC_TARJETA, mp.mp_id, p.pago_id, isnull(PAGO_CANT_CUOTAS,0) FROM GD2C2024.gd_esquema.Maestra m
+join [4_FILAS_AFECTADAS].TipoMedioDePago t on t.tmp_tipo = m.PAGO_TIPO_MEDIO_PAGO
+join [4_FILAS_AFECTADAS].MedioDePago mp on mp.mp_tipo = t.tmp_id and mp.mp_nombre = m.PAGO_MEDIO_PAGO
 join [4_FILAS_AFECTADAS].pago p on p.pago_importe = m.PAGO_IMPORTE and p.pago_fecha = m.PAGO_FECHA and p.pago_venta_nro = m.VENTA_CODIGO;
-
+;
 
 PRINT 'Tabla UsuarioXDomicilio'
 insert into [4_FILAS_AFECTADAS].UsuarioXDomicilio(usu_id, dom_id)
