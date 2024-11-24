@@ -119,6 +119,19 @@ select
 from [4_FILAS_AFECTADAS].TipoEnvio t
 
 
+create Table [4_FILAS_AFECTADAS].BI_dim_marca(
+    mar_id int primary key,
+	mar_desc nvarchar(50)
+);
+GO
+
+print'tabla BI_dim_marca'
+insert into [4_FILAS_AFECTADAS].BI_dim_marca(mar_id,mar_desc)
+select
+    m.marca_id,m.marca_descripcion
+from [4_FILAS_AFECTADAS].Marca m
+
+
 --------------------Hechos---------------------
 
 
@@ -236,8 +249,77 @@ GROUP BY
     ubi.ubi_id;
 
 
+create table [4_FILAS_AFECTADAS].BI_publicacion(
+	pub_cant_publicaciones int,
+	pub_cant_dias int,
+	pub_stock_total_inicial decimal(18,0),
+	pub_tiempo int foreign key references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
+	pub_ubi int foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
+	pub_subrubro int foreign key references [4_FILAS_AFECTADAS].BI_dim_subrubro(subrubro_id),
+	pub_marca int foreign key references [4_FILAS_AFECTADAS].BI_dim_marca(mar_id),
+	primary key(pub_tiempo,pub_ubi,pub_subrubro,pub_marca)
+);
+
+
+print 'tabla BI_publicacion'
+insert into [4_FILAS_AFECTADAS].BI_publicacion(
+									pub_cant_publicaciones,pub_cant_dias,pub_stock_total_inicial,
+									pub_tiempo,pub_ubi,pub_subrubro,pub_marca)
+select
+	count(distinct p.publ_codigo) as cant_punlicaciones,
+	sum(DATEDIFF(DAY, p.publ_fecha, p.publ_fecha_ven)) AS vigencia_total_dias,
+	sum(p.publ_stock) as stock_total_inicial,
+	t.tiempo_id,
+	ub.ubi_id,
+	ds.subrubro_id,
+	dm.mar_id
+from [4_FILAS_AFECTADAS].Publicacion p
+join [4_FILAS_AFECTADAS].AlmacenXProducto axp on axp.axp_id = p.publ_alm_prod
+join [4_FILAS_AFECTADAS].Almacen a on a.alm_id = axp.axp_alm
+join [4_FILAS_AFECTADAS].Domicilio d on d.dom_id = a.alm_dom
+join [4_FILAS_AFECTADAS].Localidad l on l.loc_id = d.dom_loc
+join [4_FILAS_AFECTADAS].Provincia pr on pr.prov_id = l.loc_prov
+join [4_FILAS_AFECTADAS].BI_dim_ubicacion ub on ub.ubi_localidad = l.loc_nombre and ub.ubi_provincia = pr.prov_nombre
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.anio=year(p.publ_fecha) and t.mes = MONTH(p.publ_fecha)
+join [4_FILAS_AFECTADAS].Producto prod on prod.prod_id = axp.axp_prod
+join [4_FILAS_AFECTADAS].SubRubro s on s.subrubro_id = prod.prod_subRub
+join [4_FILAS_AFECTADAS].BI_dim_subrubro ds on ds.subrubro_id = s.subrubro_id
+join [4_FILAS_AFECTADAS].Marca m on m.marca_id = prod.prod_marca
+join [4_FILAS_AFECTADAS].BI_dim_marca dm on dm.mar_id = m.marca_id
+group by t.tiempo_id,
+		ub.ubi_id,
+		ds.subrubro_id,
+		dm.mar_id
+
 
 --------------------------Vistas-------------------
+
+print 'vista 1'
+select
+	sum(p.pub_cant_dias)/sum(p.pub_cant_publicaciones) as promedio_dias,
+	ds.subrubro,
+	t.cuatrimestre,
+	t.anio
+from [4_FILAS_AFECTADAS].BI_publicacion p
+join [4_FILAS_AFECTADAS].BI_dim_subrubro ds on ds.subrubro_id = p.pub_subrubro
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pub_tiempo
+group by ds.subrubro,
+	t.cuatrimestre,
+	t.anio
+
+
+print 'vista 2'
+select
+	sum(p.pub_stock_total_inicial)/sum(p.pub_cant_publicaciones) as promedio_stock_inicial,
+	t.anio,
+	m.mar_desc
+from [4_FILAS_AFECTADAS].BI_publicacion p
+join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.tiempo_id = p.pub_tiempo
+join [4_FILAS_AFECTADAS].BI_dim_marca m on m.mar_id = p.pub_marca
+group by t.anio,m.mar_desc
+
+
+
 print '6'
 select top 3
 	u.ubi_localidad,
