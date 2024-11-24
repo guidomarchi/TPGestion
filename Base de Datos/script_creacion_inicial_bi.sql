@@ -211,7 +211,7 @@ GROUP BY t.tiempo_id, te.te_id, ub.ubi_id, ub2.ubi_id;
 create table [4_FILAS_AFECTADAS].BI_pago(
 	pago_tiempo int foreign key references [4_FILAS_AFECTADAS].BI_dim_tiempo(tiempo_id),
 	pago_medio_pago int FOREIGN KEY REFERENCES [4_FILAS_AFECTADAS].BI_dim_medio_pago(mp_id),
-	pago_en_cuotas bit,
+	pago_importe_cuotas decimal(18,2),
 	pago_importe_total decimal(18,2),
 	pago_ubi int foreign key references [4_FILAS_AFECTADAS].BI_dim_ubicacion(ubi_id),
 );
@@ -219,7 +219,7 @@ create table [4_FILAS_AFECTADAS].BI_pago(
 print 'tabla BI_pago'
 insert into [4_FILAS_AFECTADAS].BI_pago(pago_tiempo, 
 										pago_medio_pago,  
-										pago_en_cuotas, 
+										pago_importe_cuotas, 
 										pago_importe_total, 
 										pago_ubi)
 SELECT
@@ -227,10 +227,10 @@ SELECT
     bimp.mp_id,
     SUM(
         CASE
-            WHEN dp.det_pago_cant_cuotas > 1 and mp.mp_tipo = 1 THEN 1
+            WHEN dp.det_pago_cant_cuotas > 1 and mp.mp_tipo = 1 THEN p.pago_importe
             ELSE 0
         END
-    ) AS pago_en_cuotas,
+    ) AS total_con_cuotas,
     SUM(p.pago_importe) AS total_importe,
     ubi.ubi_id
 FROM [4_FILAS_AFECTADAS].MedioDePago mp
@@ -248,6 +248,7 @@ GROUP BY
     t.tiempo_id,
     bimp.mp_id,
     ubi.ubi_id;
+
 
 create table [4_FILAS_AFECTADAS].BI_publicacion(
 	pub_cant_publicaciones int,
@@ -320,11 +321,10 @@ group by t.anio,m.mar_desc
 
 
 
-
-print 'vista 6'
+print '6'
 select top 3
 	u.ubi_localidad,
-	sum(case when p.pago_en_cuotas is not null  then p.pago_importe_total else 0 end) as importe_en_cuotas,
+	sum(p.pago_importe_cuotas) as importe_en_cuotas,
 	mp.mp_nombre,
 	t.anio,
 	t.mes
