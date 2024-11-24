@@ -162,10 +162,11 @@ from [4_FILAS_AFECTADAS].Marca m
 
 
 CREATE TABLE [4_FILAS_AFECTADAS].BI_facturacion (
+	concepto nvarchar(50),
     fact_total decimal(18,2),
     fact_ubi int,
     fact_tiempo INT,
-    primary key (fact_total,fact_ubi,fact_tiempo),
+    primary key (concepto,fact_ubi,fact_tiempo),
     FOREIGN KEY (fact_tiempo) 
     REFERENCES [4_FILAS_AFECTADAS].BI_dim_tiempo (tiempo_id),
     FOREIGN KEY (fact_ubi) 
@@ -174,12 +175,14 @@ CREATE TABLE [4_FILAS_AFECTADAS].BI_facturacion (
 
 
 print 'tabla BI_facturacion'
-insert into [4_FILAS_AFECTADAS].BI_facturacion(fact_total,fact_ubi,fact_tiempo)
+insert into [4_FILAS_AFECTADAS].BI_facturacion(concepto,fact_total,fact_ubi,fact_tiempo)
 select
+	df.det_fac_tipo,
 	sum(f.fac_total),
 	ub.ubi_id,
 	t.tiempo_id
 from [4_FILAS_AFECTADAS].Factura f
+join [4_FILAS_AFECTADAS].Detalle_Factura df on df.det_fac_nro = f.fac_nro
 join [4_FILAS_AFECTADAS].Vendedor v on v.ven_id = f.fac_vendedor_id
 join [4_FILAS_AFECTADAS].Usuario u on u.usu_id = v.ven_usu_id
 join [4_FILAS_AFECTADAS].UsuarioXDomicilio uxd on u.usu_id = uxd.usu_id
@@ -189,7 +192,7 @@ join [4_FILAS_AFECTADAS].Provincia p on p.prov_id = l.loc_prov
 join [4_FILAS_AFECTADAS].BI_dim_ubicacion ub on ub.ubi_localidad = l.loc_nombre and ub.ubi_provincia = p.prov_nombre
 join [4_FILAS_AFECTADAS].BI_dim_tiempo t on t.anio=year(f.fac_fecha) and t.mes = MONTH(f.fac_fecha)
 group by ub.ubi_id,
-	t.tiempo_id
+	t.tiempo_id, df.det_fac_tipo
 ;
 
 CREATE TABLE [4_FILAS_AFECTADAS].BI_envio (
@@ -461,16 +464,18 @@ as
 select
 	t.mes,
 	t.anio,
+	f.concepto,
 	sum(f.fact_total)/(
 		select sum(f2.fact_total) 
 		from [4_FILAS_AFECTADAS].BI_facturacion f2 
 		JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t2 ON f2.fact_tiempo = t2.tiempo_id
-		where t2.anio = t.anio) * 100 as porcentaje
+		where t2.anio = t.anio and t.mes = t2.mes) * 100 as porcentaje
 from [4_FILAS_AFECTADAS].BI_facturacion f
 JOIN [4_FILAS_AFECTADAS].BI_dim_tiempo t ON f.fact_tiempo = t.tiempo_id
 group by 
 	t.mes,
-	t.anio
+	t.anio,
+	f.concepto
 go
 
 -- vista 10
